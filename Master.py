@@ -7,14 +7,11 @@ Created on Wed Dec 15 11:49:25 2021
  
 import matplotlib.pyplot as plt
 
-"""
-ALSO CHANGE SO THAT 'HABITABLE ZONE' GRAPH ONLY PLOTS UNTIL TOPI. BECOMES MESSY OTHERWISE
-"""
-
 #----------------------------------PART 1--------------------------------------
 # values
 Lsun = 3.828e26 # W
 S0 = 1360 # W m^-2
+maxS = 2 # S0. Arbitrary upper cut-off value for plotting purposes
 
 # file reading and data arrangement
 track = []
@@ -43,8 +40,11 @@ Te = [10**x for x in logTe] # K
 
 cind = min(range(n-1), key=lambda i: abs(logL[i]))
 
-# parameters for each body considered
 
+#----------------------------------PART 3--------------------------------------
+# instellation 
+
+# parameters for each body considered
 bodies = ['Earth','Double Earth','Half-Earth','Quadruple-Earth'] # name of the bodies
 colors = ['g','royalblue','wheat','xkcd:cyan'] # color of each body for plotting
 distances = [1, 2, 0.5, 4] # AU
@@ -53,9 +53,6 @@ numb = len(bodies)
 # calculations for each body
 Seff = [[x/d**2 for x in L] for d in distances] # S0
 Scut = [Seff[nb][cind:] for nb in range(numb)] # S0, effective instellations after current time
-
-# Arbitrary upper cut-off value for plotting purposes
-maxS = 1.5 # S0
 
 topval = [list(filter(lambda i: i>maxS, Scut[nb]))[0] for nb in range(numb)]
 topi = [Scut[nb].index(topval[nb])+cind for nb in range(numb)]
@@ -67,6 +64,10 @@ plt.title('Change in instellation')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Instellation received by solar system body [S/S0]')
 plt.legend()
+
+
+#----------------------------------PART 4--------------------------------------
+# Habitable Zone and time within
 
 # enter polynomial fits for T and S
 c0, c1, c2, c3, c4 = 1.0140, 8.1774e-5, 1.7063e-9, -4.32415e-12, -6.6462e-16 # moist greenhouse
@@ -103,7 +104,6 @@ for nb in range(numb):
     plt.plot(Seff[nb][cind:],Te[cind:],'--',color=colors[nb],label=bodies[nb]+', '+strYears[nb]+' years in HZ') # list comprehension label, add time in HZ
     plt.plot(Seff[nb][cind],Te[cind],'x',color='k')
     plt.legend()
-
 
 """
 enter T, S tracks markings each 100 Myr. Can't have markings smaller than smallest
