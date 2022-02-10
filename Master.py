@@ -17,7 +17,9 @@ maxS = 1.5 # S0. Arbitrary upper cut-off value for plotting purposes
 # file reading and data arrangement
 track = []
 
-with open("tracks/suntrack_parcol_Zinit0.01774_etaReimers0.3.dat") as f:
+filename = "tracks/suntrack_parcol_Zinit0.01774_etaReimers0.3.dat"
+
+with open(filename) as f:
     for line in f:
         rowlist = line.split()
         track.append(rowlist)
@@ -30,7 +32,6 @@ n = len(track)
 age = [float(track[i][3]) for i in range(1,n)]
 logL = [float(track[i][5]) for i in range(1,n)]
 logTe = [float(track[i][6]) for i in range(1,n)]
-
 
 #----------------------------------PART 2--------------------------------------
 # general calculations (for any body)
@@ -56,11 +57,31 @@ plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')
 
 plt.figure()
-plt.plot(age[102+cind-10:102+cind+10],L[102+cind-10:102+cind+10],linestyle='-',marker='.',color='y')
+plt.plot(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y')
 plt.gca().yaxis.set_ticks_position('both')
-plt.title('Zoomed change in luminosity')
+plt.title('Half-zoomed change in luminosity')
+plt.axis([1.15e10, 1.25e10, 0, 2600])
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')
+
+plt.figure()
+plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filename)
+plt.gca().yaxis.set_ticks_position('both')
+plt.title('Half-zoomed change in luminosity')
+plt.gca().set_xlim(1.15e10, 1.25e10)
+plt.xlabel('Age of the Sun [yr]')
+plt.ylabel('Luminosity [L_sun]')
+plt.legend()
+
+plt.figure()
+plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filename)
+plt.gca().yaxis.set_ticks_position('both')
+plt.title('Zoomed change in luminosity')
+plt.gca().set_xlim(1.19e10, 1.202e10)
+plt.xlabel('Age of the Sun [yr]')
+plt.ylabel('Luminosity [L_sun]')
+plt.legend()
+
 # [Seff[nb][102+cind] for nb in range(numb)] # for the instellation right after the jump down. Paste this after Seff has been calculated
 
 #----------------------------------PART 3--------------------------------------
@@ -75,16 +96,17 @@ numb = len(bodies)
 # calculations for each body
 Seff = [[x/d**2 for x in L] for d in distances] # S0
 Scut = [Seff[nb][cind:] for nb in range(numb)] # S0, effective instellations after current time
+roughLlimits = [[0.25*d**2, 0.9*d**2] for d in distances] # useful for graph reading
 
 topval = []
 topi = []
 for nb in range(numb):
     try:
-        topval += [list(filter(lambda i: i>maxS, Scut[nb]))[0]]
-        topi += [Scut[nb].index(topval[nb])+cind]
+        topval += [list(filter(lambda i: i>maxS, Scut[nb]))[0]] # first value exceeding maxS
+        topi += [Scut[nb].index(topval[nb])+cind] # index of that value
     except IndexError:
-        topval += [max(Scut[nb])]
-        topi += [len(Seff[nb])]
+        topval += [max(Scut[nb])] # max value instead if it never exceeds maxS
+        topi += [len(Seff[nb])] # entire length should be plotted
 
 # Plotting instellation at each body w.r.t. stellar age
 plt.figure()
@@ -92,16 +114,6 @@ for nb in range(numb):
     plt.semilogy(age[cind:topi[nb]],Seff[nb][cind:topi[nb]],'-.',color=colors[nb],label=bodies[nb])
 plt.gca().yaxis.set_ticks_position('both')
 plt.title('Change in instellation')
-plt.xlabel('Age of the Sun [yr]')
-plt.ylabel('Instellation received by solar system body [S/S0]')
-plt.legend()
-
-
-plt.figure()
-for nb in range(numb):
-    plt.semilogy(age[102+cind-10:102+cind+10],Seff[nb][102+cind-10:102+cind+10],marker='.',linestyle='-',color=colors[nb],label=bodies[nb])
-plt.gca().yaxis.set_ticks_position('both')
-plt.title('Zoomed change in instellation')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Instellation received by solar system body [S/S0]')
 plt.legend()
@@ -121,7 +133,9 @@ def IHZKopp(T):
 def OHZKopp(T):
     Tast = T-5780 # T_asterisk from Kopparapu et al. 2013
     return d0 + d1*Tast + d2*Tast**2 + d3*Tast**3 + d4*Tast**4
-    
+
+funclist = [IHZKopp, OHZKopp]
+
 inSlim = [IHZKopp(T) for T in Tlist] # inner HZ boundary limit
 outSlim = [OHZKopp(T) for T in Tlist] # outer HZ boundary limit
 
@@ -144,28 +158,46 @@ for nb in range(numb): # plotting is for working purposes
     plt.figure()
     plt.plot(range(len(leftlimit)), booleanHZ[nb], color = colors[nb], label=bodies[nb])
     plt.legend()
-    plt.figure()
-    plt.plot(range(len(leftlimit)), inIHZ[nb], color = 'r')
-    plt.plot(range(len(leftlimit)), inOHZ[nb], color = 'b')
-    
+    # plt.figure()
+    # plt.plot(range(len(leftlimit)), inIHZ[nb], color = 'r')
+    # plt.plot(range(len(leftlimit)), inOHZ[nb], color = 'b')
+    # plt.figure()
+    # plt.plot(age[cind:], booleanHZ[nb], color = colors[nb], label=bodies[nb])
+    # plt.axis([1.15e10, 1.25e10, 0, 1])
     
 trueindices= [[i for i, x in enumerate(booleanHZ[nb]) if x] for nb in range(numb)]
-truestarts = [[i for i in trueindices[nb] if i-1 not in trueindices[nb]] for nb in range(numb)]
-truestops = [[i for i in trueindices[nb] if i+1 not in trueindices[nb]] for nb in range(numb)]
+truestarts = [[i for i in trueindices[nb] if i-1 not in trueindices[nb]] for nb in range(numb)] # first true index in sequence
+truestops = [[i for i in trueindices[nb] if i+1 not in trueindices[nb]] for nb in range(numb)] # last true index in sequence
 trueranges = [[[truestarts[nb][i], truestops[nb][i]] for i in range(len(truestarts[nb]))] for nb in range(numb)]
 
 # preliminary timespan calculation
 approxyearsinHZ = [[age[cind+x[1]]-age[cind+x[0]] for x in trueranges[nb]] for nb in range(numb)]
 approxstrYears = [['0' if x == 0 else "{:.1e}".format(x) for x in y] for y in approxyearsinHZ]
 
-# Instead determine when each boundary is crossed
-IHZtrueind = [[i for i, x in enumerate(inIHZ[nb]) if x] for nb in range(numb)]
-IHZtruestarts = [[i for i in IHZtrueind[nb] if i-1 not in IHZtrueind[nb]] for nb in range(numb)]
-IHZtruestops = [[i for i in IHZtrueind[nb] if i+1 not in IHZtrueind[nb]] for nb in range(numb)]
+# list comprehension magic, ADD a polynomial fit between first index outside HZ boundary and first index inside HZ boundary for each of the two boundaries.
+Sstarts = [[Scut[nb][x-1:x+1] for x in truestarts[nb]] for nb in range(numb)] # [last S outside, first S inside]
+Sstops = [[Scut[nb][x:x+2] for x in truestops[nb]] for nb in range(numb)] # [last S inside, first S outside]
+agestarts = [[age[cind+x-1:cind+x+1] for x in truestarts[nb]] for nb in range(numb)] # same as above
+agestops = [[age[cind+x:cind+x+2] for x in truestops[nb]] for nb in range(numb)]
+meanTestarts = [[(Te[x+cind-1]+Te[x+cind])/2 for x in truestarts[nb]] for nb in range(numb)]
+meanTestops = [[(Te[x+cind]+Te[x+cind+1])/2 for x in truestops[nb]] for nb in range(numb)]
 
-# FRÅGA SARA VARFÖR DET ÄR ETT STORT HOPP I INDEXET 102+CIND=194
+startpolys = [[list(np.polyfit(Sstarts[nb][i], agestarts[nb][i], 1)) for i in range(len(Sstarts[nb]))] for nb in range(numb)] # list of polynomial coefficients for age(S) for each time entering HZ
+stoppolys = [[list(np.polyfit(Sstops[nb][i], agestops[nb][i], 1)) for i in range(len(Sstops[nb]))] for nb in range(numb)] # list of polynomial coefficients for age(S) for each time leaving HZ
+startagepolyval = [[np.polyval(startpolys[nb][i], funclist[not inOHZ[nb][truestarts[nb][i]-1]](meanTestarts[nb][i])) for i in range(len(truestarts[nb]))] for nb in range(numb)] # interpolated ages of entering HZ
+stopagepolyval = [[np.polyval(stoppolys[nb][i], funclist[not inOHZ[nb][truestops[nb][i]+1]](meanTestops[nb][i])) for i in range(len(truestops[nb]))] for nb in range(numb)] # interpolated ages of leaving HZ
 
-# ADD a polynomial fit between first index outside HZ boundary and first index inside HZ boundary for each of the two boundaries.
+allyearsinHZ = [[stopagepolyval[nb][i] - startagepolyval[nb][i] for i in range(len(stopagepolyval[nb]))] for nb in range(numb)]
+
+plt.figure()
+for nb in range(numb):
+    plt.bar([nb + 0.25*i for i in range(len(allyearsinHZ[nb]))], allyearsinHZ[nb], width=0.25, color=colors[nb], label=bodies[nb])
+    plt.legend()
+plt.xticks(range(numb), bodies)
+plt.ylabel('timespan [years]')
+plt.title('Timespans inside the Habitable Zone')
+
+# keep these outdated fits maybe so that the double ranges with a quick outdip for Jupiter and Saturn are added. 
 leftS = [Seff[nb][leftindex[nb]-1:leftindex[nb]+1] for nb in range(numb)] # [last S inside IHZ, first S outside IHZ]
 leftAge = [age[leftindex[nb]-1:leftindex[nb]+1] for nb in range(numb)]
 leftpolys = [list(np.polyfit(leftS[nb], leftAge[nb], 1)) for nb in range(numb)]
@@ -197,7 +229,6 @@ plt.ylabel('Effective temperature [K]')
 for nb in range(numb):
     plt.plot(Seff[nb][cind:topi[nb]],Te[cind:topi[nb]],linestyle='--',marker='.',color=colors[nb],label=bodies[nb]+', '+strYears[nb]+' years in HZ') # list comprehension label, add time in HZ
     plt.plot(Seff[nb][cind],Te[cind],'x',color='k')
-    # plt.plot(Seff[nb][cind:topi[nb]],Te[cind:topi[nb]],'.',color=colors[nb]) # good to see while working
     plt.legend()
 
 #  SATURN BRIEFLY BOUNCES OUTSIDE OHZ
