@@ -17,7 +17,8 @@ maxS = 1.5 # S0. Arbitrary upper cut-off value for plotting purposes
 # file reading and data arrangement
 track = []
 
-filename = "tracks/suntrack_parcol_Zinit0.01774_etaReimers0.3.dat"
+filename = "tracks/suntrack_parcol_Zinit0.01774_etaReimers0.2.dat"
+filenum = filename[-7:-4]
 
 with open(filename) as f:
     for line in f:
@@ -48,6 +49,7 @@ plt.gca().yaxis.set_ticks_position('both')
 plt.title('Change in luminosity')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')
+plt.savefig(filenum+'_no-zoom.pdf')
 
 plt.figure()
 plt.plot(age[cind:],L[cind:],'-', color = 'y')
@@ -65,24 +67,77 @@ plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')
 
 plt.figure()
-plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filename)
+plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filename, mfc = 'gray', markeredgecolor='k')
 plt.gca().yaxis.set_ticks_position('both')
 plt.title('Half-zoomed change in luminosity')
 plt.gca().set_xlim(1.15e10, 1.25e10)
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')
 plt.legend()
+plt.savefig(filenum+'_half-zoomed.pdf')
 
 plt.figure()
-plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filename)
+plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filename, mfc = 'gray', markeredgecolor='k')
 plt.gca().yaxis.set_ticks_position('both')
 plt.title('Zoomed change in luminosity')
 plt.gca().set_xlim(1.19e10, 1.202e10)
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')
 plt.legend()
+plt.savefig(filenum+'_zoomed.pdf')
 
-# [Seff[nb][102+cind] for nb in range(numb)] # for the instellation right after the jump down. Paste this after Seff has been calculated
+if filenum == '0.2':
+    plt.figure()
+    plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filename, mfc = 'gray', markeredgecolor='k')
+    plt.gca().yaxis.set_ticks_position('both')
+    plt.title('Second zoomed change in luminosity')
+    plt.gca().set_xlim(1.21e10, 1.215e10)
+    plt.xlabel('Age of the Sun [yr]')
+    plt.ylabel('Luminosity [L_sun]')
+    plt.legend()
+    plt.savefig(filenum+'_zoomed2.pdf')
+
+# plot HR esque diagram
+plt.figure()
+plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
+plt.xlabel('Effective temperature [K]')
+plt.ylabel('Luminosity [L_sun]')
+plt.title('HR-esque diagram')
+plt.gca().invert_xaxis()
+plt.legend()
+
+# plot Te w.r.t. stellar age
+plt.figure()
+plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
+plt.xlabel('Age of the Sun [yr]')
+plt.ylabel('Effective temperature [K]')
+plt.title('Change in temperature')
+plt.legend()
+
+plt.figure()
+plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
+plt.xlabel('Age of the Sun [yr]')
+plt.ylabel('Effective temperature [K]')
+plt.title('Half-zoomed change in temperature')
+plt.gca().set_xlim(1.15e10, 1.25e10)
+plt.legend()
+
+plt.figure()
+plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
+plt.xlabel('Age of the Sun [yr]')
+plt.ylabel('Effective temperature [K]')
+plt.title('Zoomed change in temperature')
+plt.gca().set_xlim(1.19e10, 1.202e10)
+plt.legend()
+
+if filenum == '0.2':
+    plt.figure()
+    plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
+    plt.xlabel('Age of the Sun [yr]')
+    plt.ylabel('Effective temperature [K]')
+    plt.title('Second zoomed change in temperature')
+    plt.gca().set_xlim(1.21e10, 1.215e10)
+    plt.legend()
 
 #----------------------------------PART 3--------------------------------------
 # instellation 
@@ -164,6 +219,7 @@ for nb in range(numb): # plotting is for working purposes
     # plt.figure()
     # plt.plot(age[cind:], booleanHZ[nb], color = colors[nb], label=bodies[nb])
     # plt.axis([1.15e10, 1.25e10, 0, 1])
+    # Make this legible
     
 trueindices= [[i for i, x in enumerate(booleanHZ[nb]) if x] for nb in range(numb)]
 truestarts = [[i for i in trueindices[nb] if i-1 not in trueindices[nb]] for nb in range(numb)] # first true index in sequence
@@ -184,8 +240,9 @@ meanTestops = [[(Te[x+cind]+Te[x+cind+1])/2 for x in truestops[nb]] for nb in ra
 
 startpolys = [[list(np.polyfit(Sstarts[nb][i], agestarts[nb][i], 1)) for i in range(len(Sstarts[nb]))] for nb in range(numb)] # list of polynomial coefficients for age(S) for each time entering HZ
 stoppolys = [[list(np.polyfit(Sstops[nb][i], agestops[nb][i], 1)) for i in range(len(Sstops[nb]))] for nb in range(numb)] # list of polynomial coefficients for age(S) for each time leaving HZ
-startagepolyval = [[np.polyval(startpolys[nb][i], funclist[not inOHZ[nb][truestarts[nb][i]-1]](meanTestarts[nb][i])) for i in range(len(truestarts[nb]))] for nb in range(numb)] # interpolated ages of entering HZ
-stopagepolyval = [[np.polyval(stoppolys[nb][i], funclist[not inOHZ[nb][truestops[nb][i]+1]](meanTestops[nb][i])) for i in range(len(truestops[nb]))] for nb in range(numb)] # interpolated ages of leaving HZ
+startagepolyval = [[np.polyval(startpolys[nb][i], funclist[not inOHZ[nb][truestarts[nb][i]-1]](meanTestarts[nb][i])) if 2600<meanTestarts[nb][i]<7200 else sum(agestarts[nb][i])/2 for i in range(len(truestarts[nb]))] for nb in range(numb)] # interpolated ages of entering HZ
+stopagepolyval = [[np.polyval(stoppolys[nb][i], funclist[not inOHZ[nb][truestops[nb][i]+1]](meanTestops[nb][i])) if 2600<meanTestops[nb][i]<7200 else sum(agestops[nb][i])/2 for i in range(len(truestops[nb]))] for nb in range(numb)] # interpolated ages of leaving HZ
+# removing if else part of list comprehension utilizes polynomial fits where they are no longer applicable. 0.2 had negative times late when Te >~= 10000. 
 
 allyearsinHZ = [[stopagepolyval[nb][i] - startagepolyval[nb][i] for i in range(len(stopagepolyval[nb]))] for nb in range(numb)]
 
@@ -227,15 +284,15 @@ plt.title('Habitable zone and solar system body tracks')
 plt.xlabel('Instellation [S/S0]')
 plt.ylabel('Effective temperature [K]')
 for nb in range(numb):
-    plt.plot(Seff[nb][cind:topi[nb]],Te[cind:topi[nb]],linestyle='--',marker='.',color=colors[nb],label=bodies[nb]+', '+strYears[nb]+' years in HZ') # list comprehension label, add time in HZ
+    plt.plot(Seff[nb][cind:topi[nb]],Te[cind:topi[nb]],linestyle='--',marker='.',color=colors[nb],label=bodies[nb]+', '+strYears[nb]+' years in HZ')
     plt.plot(Seff[nb][cind],Te[cind],'x',color='k')
     plt.legend()
 
-#  SATURN BRIEFLY BOUNCES OUTSIDE OHZ
+# SATURN BRIEFLY BOUNCES OUTSIDE OHZ
 # plt.figure()
 # plt.plot(inSlim, Tlist, color='r')
 # plt.plot(outSlim, Tlist, color='b')
-# plt.plot(Seff[1][cind:topi[1]],Te[cind:topi[1]],linestyle='--',marker='.',color=colors[1],label=bodies[1]+', '+strYears[1]+' years in HZ') # list comprehension label, add time in HZ
+# plt.plot(Seff[1][cind:topi[1]],Te[cind:topi[1]],linestyle='--',marker='.',color=colors[1],label=bodies[1]+', '+strYears[1]+' years in HZ')
 # plt.axis([0.4, 0.2, 4300, 4600])
 
 # Same plot but only including tracks beyond first spike in instellation
@@ -248,5 +305,5 @@ for nb in range(numb):
 # plt.xlabel('Instellation [S/S0]')
 # plt.ylabel('Effective temperature [K]')
 # for nb in range(numb):
-#     plt.plot(Seff[nb][topi[nb]:],Te[topi[nb]:],linestyle='--',marker='.',color=colors[nb],label=bodies[nb]+', '+strYears[nb]+' years in HZ') # list comprehension label, add time in HZ
+#     plt.plot(Seff[nb][topi[nb]:],Te[topi[nb]:],linestyle='--',marker='.',color=colors[nb],label=bodies[nb]
 #     plt.legend()
