@@ -97,15 +97,6 @@ if filenum == '0.2':
     plt.legend()
     plt.savefig(filenum+'_zoomed2.pdf')
 
-# plot HR esque diagram
-plt.figure()
-plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
-plt.xlabel('Effective temperature [K]')
-plt.ylabel('Luminosity [L_sun]')
-plt.title('HR-esque diagram')
-plt.gca().invert_xaxis()
-plt.legend()
-
 # plot Te w.r.t. stellar age
 plt.figure()
 plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
@@ -113,6 +104,7 @@ plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Effective temperature [K]')
 plt.title('Change in temperature')
 plt.legend()
+plt.savefig(filenum+'_Te_no-zoom.pdf')
 
 plt.figure()
 plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
@@ -121,6 +113,7 @@ plt.ylabel('Effective temperature [K]')
 plt.title('Half-zoomed change in temperature')
 plt.gca().set_xlim(1.15e10, 1.25e10)
 plt.legend()
+plt.savefig(filenum+'_Te_half-zoomed.pdf')
 
 plt.figure()
 plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
@@ -129,6 +122,7 @@ plt.ylabel('Effective temperature [K]')
 plt.title('Zoomed change in temperature')
 plt.gca().set_xlim(1.19e10, 1.202e10)
 plt.legend()
+plt.savefig(filenum+'_Te_zoomed.pdf')
 
 if filenum == '0.2':
     plt.figure()
@@ -138,6 +132,7 @@ if filenum == '0.2':
     plt.title('Second zoomed change in temperature')
     plt.gca().set_xlim(1.21e10, 1.215e10)
     plt.legend()
+    plt.savefig(filenum+'_Te_zoomed2.pdf')
 
 #----------------------------------PART 3--------------------------------------
 # instellation 
@@ -222,9 +217,21 @@ for nb in range(numb): # plotting is for working purposes
     # Make this legible
     
 trueindices= [[i for i, x in enumerate(booleanHZ[nb]) if x] for nb in range(numb)]
+anytrue = [i for i, x in enumerate(booleanHZ[nb]) if any(i in sl for sl in trueindices)] # is the index true for any of the planets
 truestarts = [[i for i in trueindices[nb] if i-1 not in trueindices[nb]] for nb in range(numb)] # first true index in sequence
 truestops = [[i for i in trueindices[nb] if i+1 not in trueindices[nb]] for nb in range(numb)] # last true index in sequence
 trueranges = [[[truestarts[nb][i], truestops[nb][i]] for i in range(len(truestarts[nb]))] for nb in range(numb)]
+
+# plot HR esque diagram
+plt.figure()
+plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', label=filenum, mfc = 'gray', markeredgecolor='k')
+plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', color = 'g')
+plt.xlabel('Effective temperature [K]')
+plt.ylabel('Luminosity [L_sun]')
+plt.title('HR-esque diagram')
+plt.gca().invert_xaxis()
+plt.legend()
+plt.savefig(filenum+'_HR-esque.pdf')
 
 # preliminary timespan calculation
 approxyearsinHZ = [[age[cind+x[1]]-age[cind+x[0]] for x in trueranges[nb]] for nb in range(numb)]
@@ -296,14 +303,14 @@ for nb in range(numb):
 # plt.axis([0.4, 0.2, 4300, 4600])
 
 # Same plot but only including tracks beyond first spike in instellation
-# plt.figure()
-# plt.gca().set_aspect(aspect = 1/5780) # arbitrary
-# plt.plot(inSlim, Tlist, color='r')
-# plt.plot(outSlim, Tlist, color='b')
-# plt.axis([1.25, 0.2, 2600, 7200])
-# plt.title('Habitable zone and solar system body tracks')
-# plt.xlabel('Instellation [S/S0]')
-# plt.ylabel('Effective temperature [K]')
-# for nb in range(numb):
-#     plt.plot(Seff[nb][topi[nb]:],Te[topi[nb]:],linestyle='--',marker='.',color=colors[nb],label=bodies[nb]
-#     plt.legend()
+plt.figure()
+plt.gca().set_aspect(aspect = 1/5780) # arbitrary
+plt.plot(inSlim, Tlist, color='r')
+plt.plot(outSlim, Tlist, color='b')
+plt.axis([1.25, 0.2, 2600, 7200])
+plt.title('Habitable zone and solar system body tracks')
+plt.xlabel('Instellation [S/S0]')
+plt.ylabel('Effective temperature [K]')
+for nb in range(numb):
+   plt.plot(Seff[nb][topi[nb]:],Te[topi[nb]:],linestyle='--',marker='.',color=colors[nb],label=bodies[nb])
+   plt.legend()
