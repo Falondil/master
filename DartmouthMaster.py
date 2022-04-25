@@ -15,29 +15,46 @@ S0 = 1360 # W m^-2
 maxS = 1.5 # S0. Arbitrary upper cut-off value for plotting purposes
 
 # file reading and data arrangement
-track = []
+track1 = []
 
-filename = "tracks/suntrack_parcol_Zinit0.01774_etaReimers0.2.dat"
-filenum = filename[-7:-4]
+filename1 = "tracks/alpha00_M100_RGB.txt"
+filenum1 = filename1[-7:-4]
 
-with open(filename) as f:
+with open(filename1) as f:
     for line in f:
         rowlist = line.split()
-        track.append(rowlist)
+        track1.append(rowlist)
         
-track[0].pop(0) # removes the # from start of column names
-track.pop(-1)   # removes ['#track', 'terminated'] statement
+track1[0].pop(0) # removes the # from start of column names
     
-n = len(track)
+n1 = len(track1)
 
-age = [float(track[i][3]) for i in range(1,n)]
-logL = [float(track[i][5]) for i in range(1,n)]
-logTe = [float(track[i][6]) for i in range(1,n)]
+age1 = [float(track1[i][0]) for i in range(1,n1)]
+logL1 = [float(track1[i][3]) for i in range(1,n1)]
+logTe1 = [float(track1[i][1]) for i in range(1,n1)]
 
-# Instant Helium flash jump to quiescent Helium fusion
-age1 = age[:195]
-age2 = [a-(age[195]-age[194]) for a in age[195:]]
-age = age1+age2
+track2 = []
+
+filename2 = "tracks/alpha00_M100_HB.txt"
+filenum2 = filename2[-7:-4]
+with open(filename2) as f:
+    for line in f:
+        rowlist = line.split()
+        track2.append(rowlist)
+        
+track2[0].pop(0) # removes the # from start of column names
+
+n2 = len(track2)
+
+age2 = [float(track2[i][0]) for i in range(1,n2)]
+logL2 = [float(track2[i][3]) for i in range(1,n2)]
+logTe2 = [float(track2[i][1]) for i in range(1,n2)]
+
+n = n1+n2-1
+
+age = age1+[a+age1[-1] for a in age2]
+logL = logL1+logL2
+logTe = logTe1+logTe2
 
 #----------------------------------PART 2--------------------------------------
 # general calculations (for any body)
@@ -45,7 +62,7 @@ L = [10**x for x in logL] # L_sun
 Lwatt = [Lsun*x for x in L] # Watt
 Te = [10**x for x in logTe] # K
 
-cind = min(range(n-1), key=lambda i: abs(logL[i]))
+cind = min(range(n-1), key=lambda i: abs(age[i]-4.6e9))
 
 # Plot luminosity w.r.t. stellar age
 plt.figure()
@@ -53,91 +70,23 @@ plt.semilogy(age[cind:],L[cind:],'-', color = 'y')
 plt.gca().yaxis.set_ticks_position('both')
 plt.title('Change in luminosity')
 plt.xlabel('Age of the Sun [yr]')
+plt.ylabel('Luminosity [L_sun]')    
+
+plt.figure()
+plt.semilogy(age[cind:n1],L[cind:n1],linestyle='-', marker='.', color='y', mfc = 'gray', markeredgecolor='C0')
+plt.semilogy(age[n1-1:],L[n1-1:],linestyle='-', marker='.', color = 'y', mfc = 'gray', markeredgecolor='C1')
+plt.gca().yaxis.set_ticks_position('both')
+plt.title('Half-zoomed change in luminosity')
+plt.gca().set_xlim(1.20e10, 1.25e10)
+plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')
-plt.savefig('Plots/'+filenum+'_no-zoom.pdf')
-
-# plt.figure()
-# plt.plot(age[cind:],L[cind:],'-', color = 'y')
-# plt.gca().yaxis.set_ticks_position('both')
-# plt.title('Change in luminosity')
-# plt.xlabel('Age of the Sun [yr]')
-# plt.ylabel('Luminosity [L_sun]')
-
-# plt.figure()
-# plt.plot(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y')
-# plt.gca().yaxis.set_ticks_position('both')
-# plt.title('Half-zoomed change in luminosity')
-# plt.axis([1.15e10, 1.25e10, 0, 2600])
-# plt.xlabel('Age of the Sun [yr]')
-# plt.ylabel('Luminosity [L_sun]')
-
-# plt.figure()
-# plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
-# plt.gca().yaxis.set_ticks_position('both')
-# plt.title('Half-zoomed change in luminosity')
-# plt.gca().set_xlim(1.15e10, 1.25e10)
-# plt.xlabel('Age of the Sun [yr]')
-# plt.ylabel('Luminosity [L_sun]')
-# plt.legend()
-# plt.savefig('Plots/'+filenum+'_half-zoomed.pdf')
-
-# plt.figure()
-# plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
-# plt.gca().yaxis.set_ticks_position('both')
-# plt.title('Zoomed change in luminosity')
-# plt.gca().set_xlim(1.19e10, 1.202e10)
-# plt.xlabel('Age of the Sun [yr]')
-# plt.ylabel('Luminosity [L_sun]')
-# plt.legend()
-# plt.savefig('Plots/'+filenum+'_zoomed.pdf')
-
-if filenum == '0.2':
-    plt.figure()
-    plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
-    plt.gca().yaxis.set_ticks_position('both')
-    plt.title('Second zoomed change in luminosity')
-    plt.gca().set_xlim(1.21e10, 1.215e10)
-    plt.xlabel('Age of the Sun [yr]')
-    plt.ylabel('Luminosity [L_sun]')
-    plt.legend()
-    plt.savefig('Plots/'+filenum+'_zoomed2.pdf')
 
 # plot Te w.r.t. stellar age
-# plt.figure()
-# plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
-# plt.xlabel('Age of the Sun [yr]')
-# plt.ylabel('Effective temperature [K]')
-# plt.title('Change in temperature')
-# plt.legend()
-# plt.savefig('Plots/'+filenum+'_Te_no-zoom.pdf')
-
-# plt.figure()
-# plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
-# plt.xlabel('Age of the Sun [yr]')
-# plt.ylabel('Effective temperature [K]')
-# plt.title('Half-zoomed change in temperature')
-# plt.gca().set_xlim(1.15e10, 1.25e10)
-# plt.legend()
-# plt.savefig('Plots/'+filenum+'_Te_half-zoomed.pdf')
-
-# plt.figure()
-# plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
-# plt.xlabel('Age of the Sun [yr]')
-# plt.ylabel('Effective temperature [K]')
-# plt.title('Zoomed change in temperature')
-# plt.gca().set_xlim(1.19e10, 1.202e10)
-# plt.legend()
-# plt.savefig('Plots/'+filenum+'_Te_zoomed.pdf')
-
-# if filenum == '0.2':
-#     plt.figure()
-#     plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
-#     plt.xlabel('Age of the Sun [yr]')
-#     plt.ylabel('Effective temperature [K]')
-#     plt.title('Second zoomed change in temperature')
-#     plt.gca().set_xlim(1.21e10, 1.215e10)
-#     plt.legend()
-#     plt.savefig('Plots/'+filenum+'_Te_zoomed2.pdf')
+plt.figure()
+plt.plot(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange')
+plt.xlabel('Age of the Sun [yr]')
+plt.ylabel('Effective temperature [K]')
+plt.title('Change in temperature')
 
 #----------------------------------PART 3--------------------------------------
 # instellation 
@@ -191,21 +140,31 @@ def EarlyMars(T):
     Tast = T-5780
     return f0 + f1*Tast + f2*Tast**2 + f3*Tast**3 + f4*Tast**4
 
+# Plotting instellation at each body w.r.t. stellar age
 plt.figure()
 for nb in range(numb):
-    plt.semilogy(age[cind:],Seff[nb][cind:],'-',linewidth=2,color=colors[nb],label=bodies[nb])
+    plt.semilogy(age[cind:topi[nb]],Seff[nb][cind:topi[nb]],'-',color=colors[nb],label=bodies[nb])
 plt.gca().yaxis.set_ticks_position('both')
-plt.gca().set_xlim(left= 1.1e10)
-plt.semilogy(age[cind:], [IHZKopp(T) for T in Te[cind:]], color='r', linestyle='--', linewidth=1.5)
-plt.semilogy(age[cind:], [OHZKopp(T) for T in Te[cind:]], color='b', linestyle='--', linewidth=1.5)
-# for T in [5780]:
-#     plt.axhline(RecentVenus(T), color='r',linewidth=1)
-#     plt.axhline(EarlyMars(T), color='b',linewidth=1)
 plt.title('Change in instellation')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Instellation received by solar system body [S/S0]')
 plt.legend()
-# plt.savefig('Plots/Instellation'+filenum+'.pdf')
+
+plt.figure()
+for nb in range(numb):
+    plt.semilogy(age[cind:],Seff[nb][cind:],'-',color=colors[nb],label=bodies[nb])
+plt.gca().yaxis.set_ticks_position('both')
+plt.gca().set_xlim(left= 1.1e10)
+plt.semilogy(age[cind:], [IHZKopp(T) for T in Te[cind:]], color='r', linewidth=1.5, linestyle='--')
+plt.semilogy(age[cind:], [OHZKopp(T) for T in Te[cind:]], color='b', linewidth=1.5, linestyle='--')
+# for T in [5780]:
+#     plt.axhline(IHZKopp(T), color='r',linewidth=1)
+#     plt.axhline(OHZKopp(T), color='b',linewidth=1)
+plt.title('Change in instellation')
+plt.xlabel('Age of the Sun [yr]')
+plt.ylabel('Instellation received by solar system body [S/S0]')
+plt.legend()
+
 
 funclist = [IHZKopp, OHZKopp]
 
@@ -224,7 +183,7 @@ rightdiff = [[Scut[nb][i]-rightlimit[i] for i in range(len(Scut[nb]))] for nb in
 rightindex = [cind if Scut[nb][0]>rightlimit[0] else rightdiff[nb].index(list(filter(lambda i: i>0, rightdiff[nb]))[0])+cind-1 for nb in range(numb)] # last point outside OHZ
 # consider case where the body at no point is outside the outer HZ boundary
 # in that case, time in HZ starts counting at current time
-    
+
 inIHZ = [[leftlimit[i]>Scut[nb][i] for i in range(len(Scut[nb]))] for nb in range(numb)]
 inOHZ = [[Scut[nb][i]>rightlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)]
 # Boolean HZ. perhaps alternate way of getting indices. Does not distinguish IHZ and OHZ. 
@@ -249,14 +208,12 @@ trueranges = [[[truestarts[nb][i], truestops[nb][i]] for i in range(len(truestar
 
 # plot HR esque diagram
 plt.figure()
-plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', label=filenum, mfc = 'gray', markeredgecolor='k')
+plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', mfc = 'gray', markeredgecolor='k')
 plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', color = 'g')
 plt.xlabel('Effective temperature [K]')
 plt.ylabel('Luminosity [L_sun]')
 plt.title('HR-esque diagram')
 plt.gca().invert_xaxis()
-plt.legend()
-plt.savefig('Plots/'+filenum+'_HR-esque.pdf')
 
 # preliminary timespan calculation
 approxyearsinHZ = [[age[cind+x[1]]-age[cind+x[0]] for x in trueranges[nb]] for nb in range(numb)]
@@ -286,7 +243,6 @@ for nb in range(numb):
 plt.xticks(range(numb), bodies)
 plt.ylabel('timespan [years]')
 plt.title('Timespans inside the Habitable Zone')
-# plt.savefig('Plots/timeinHZ'+filenum+'.pdf')
 
 for nb in range(numb):
     plt.figure()
@@ -300,7 +256,7 @@ for nb in range(numb):
 
 strYears = [['0' if x == 0 else "{:.1e}".format(x) for x in allyearsinHZ[nb]] for nb in range(numb)] # list of strings, scientific notation 1 decimal
 
-#----------------------------------PART 4b-------------------------------------
+# #----------------------------------PART 4b-------------------------------------
 # Habitable Zone plotting
 
 # Base case HZ plot
@@ -317,7 +273,6 @@ for nb in range(numb):
     plt.plot(Seff[nb][cind:topi[nb]],Te[cind:topi[nb]],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb])
     plt.plot(Seff[nb][cind],Te[cind],'o',color='k')
     plt.legend()
-# plt.savefig('Plots/firstHZ'+filenum+'.pdf')
 
 # # Same plot for each planet, but full
 # for nb in range(numb):
