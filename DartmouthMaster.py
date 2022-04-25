@@ -68,7 +68,7 @@ cind = min(range(n-1), key=lambda i: abs(age[i]-4.6e9))
 plt.figure()
 plt.semilogy(age[cind:],L[cind:],'-', color = 'y')
 plt.gca().yaxis.set_ticks_position('both')
-plt.title('Change in luminosity')
+plt.title('Change in luminosity (Dartmouth)')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')    
 
@@ -76,7 +76,7 @@ plt.figure()
 plt.semilogy(age[cind:n1],L[cind:n1],linestyle='-', marker='.', color='y', mfc = 'gray', markeredgecolor='C0')
 plt.semilogy(age[n1-1:],L[n1-1:],linestyle='-', marker='.', color = 'y', mfc = 'gray', markeredgecolor='C1')
 plt.gca().yaxis.set_ticks_position('both')
-plt.title('Half-zoomed change in luminosity')
+plt.title('Half-zoomed change in luminosity (Dartmouth)')
 plt.gca().set_xlim(1.20e10, 1.25e10)
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')
@@ -86,7 +86,7 @@ plt.figure()
 plt.plot(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Effective temperature [K]')
-plt.title('Change in temperature')
+plt.title('Change in temperature (Dartmouth)')
 
 #----------------------------------PART 3--------------------------------------
 # instellation 
@@ -140,12 +140,16 @@ def EarlyMars(T):
     Tast = T-5780
     return f0 + f1*Tast + f2*Tast**2 + f3*Tast**3 + f4*Tast**4
 
+# choose which HZ boundary definition to use
+# funclist = [IHZKopp, OHZKopp]
+funclist = [RecentVenus, EarlyMars]
+
 # Plotting instellation at each body w.r.t. stellar age
 plt.figure()
 for nb in range(numb):
     plt.semilogy(age[cind:topi[nb]],Seff[nb][cind:topi[nb]],'-',color=colors[nb],label=bodies[nb])
 plt.gca().yaxis.set_ticks_position('both')
-plt.title('Change in instellation')
+plt.title('Change in instellation (Dartmouth)')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Instellation received by solar system body [S/S0]')
 plt.legend()
@@ -155,18 +159,15 @@ for nb in range(numb):
     plt.semilogy(age[cind:],Seff[nb][cind:],'-',color=colors[nb],label=bodies[nb])
 plt.gca().yaxis.set_ticks_position('both')
 plt.gca().set_xlim(left= 1.1e10)
-plt.semilogy(age[cind:], [IHZKopp(T) for T in Te[cind:]], color='r', linewidth=1.5, linestyle='--')
-plt.semilogy(age[cind:], [OHZKopp(T) for T in Te[cind:]], color='b', linewidth=1.5, linestyle='--')
+plt.semilogy(age[cind:], [funclist[0](T) for T in Te[cind:]], color='r', linewidth=1.5, linestyle='--')
+plt.semilogy(age[cind:], [funclist[1](T) for T in Te[cind:]], color='b', linewidth=1.5, linestyle='--')
 # for T in [5780]:
 #     plt.axhline(IHZKopp(T), color='r',linewidth=1)
 #     plt.axhline(OHZKopp(T), color='b',linewidth=1)
-plt.title('Change in instellation')
+plt.title('Change in instellation (Dartmouth)')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Instellation received by solar system body [S/S0]')
 plt.legend()
-
-
-funclist = [IHZKopp, OHZKopp]
 
 inSlim = [IHZKopp(T) for T in Tlist] # inner HZ boundary limit
 outSlim = [OHZKopp(T) for T in Tlist] # outer HZ boundary limit
@@ -174,8 +175,8 @@ rvSlim = [RecentVenus(T) for T in Tlist] # optimistic inner HZ
 emSlim = [EarlyMars(T) for T in Tlist] # optimistic outer HZ
 
 # Find the S limit for a given Te from the stellar track
-leftlimit = [IHZKopp(T) for T in Te[cind:]]
-rightlimit = [OHZKopp(T) for T in Te[cind:]]
+leftlimit = [funclist[0](T) for T in Te[cind:]]
+rightlimit = [funclist[1](T) for T in Te[cind:]]
 # find indices closest to inner and outer HZ boundary for each body 
 leftdiff = [[Scut[nb][i]-leftlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)] # differences between current S and S at the boundary (same Te)
 leftindex = [leftdiff[nb].index(list(filter(lambda i: i>0, leftdiff[nb]))[0])+cind for nb in range(numb)] # first element OUTSIDE IHZ
@@ -188,6 +189,8 @@ inIHZ = [[leftlimit[i]>Scut[nb][i] for i in range(len(Scut[nb]))] for nb in rang
 inOHZ = [[Scut[nb][i]>rightlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)]
 # Boolean HZ. perhaps alternate way of getting indices. Does not distinguish IHZ and OHZ. 
 booleanHZ = [[inIHZ[nb][i] and inOHZ[nb][i] for i in range(len(Scut[nb]))] for nb in range(numb)]
+for nb in range(numb):
+    booleanHZ[nb][-1]=False # Stupid way to ensure that the habitablity time calculations work even if you have a track too short to plot all the timespans inside HZ
 # for nb in range(numb): # plotting is for working purposes
     # plt.figure()
     # plt.plot(range(len(leftlimit)), booleanHZ[nb], color = colors[nb], label=bodies[nb])
@@ -212,7 +215,7 @@ plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', mfc =
 plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', color = 'g')
 plt.xlabel('Effective temperature [K]')
 plt.ylabel('Luminosity [L_sun]')
-plt.title('HR-esque diagram')
+plt.title('HR-esque diagram (Dartmouth)')
 plt.gca().invert_xaxis()
 
 # preliminary timespan calculation
@@ -242,7 +245,7 @@ for nb in range(numb):
     plt.legend()
 plt.xticks(range(numb), bodies)
 plt.ylabel('timespan [years]')
-plt.title('Timespans inside the Habitable Zone')
+plt.title('Timespans inside the Habitable Zone (Dartmouth)')
 
 for nb in range(numb):
     plt.figure()
@@ -251,7 +254,7 @@ for nb in range(numb):
     plt.gca().set_xlim(right=age[-1])
     plt.xlabel('[years]')
     plt.ylabel('timespan [years]')
-    plt.title('Timespans inside the Habitable Zone')
+    plt.title('Timespans inside the Habitable Zone (Dartmouth)')
     plt.legend()
 
 strYears = [['0' if x == 0 else "{:.1e}".format(x) for x in allyearsinHZ[nb]] for nb in range(numb)] # list of strings, scientific notation 1 decimal
@@ -266,7 +269,7 @@ plt.gca().yaxis.set_ticks_position('both')
 plt.plot(inSlim, Tlist, color='r')
 plt.plot(outSlim, Tlist, color='b')
 plt.axis([1.25, 0.2, 2600, 7200])
-plt.title('First pass through HZ')
+plt.title('First pass through HZ (Dartmouth)')
 plt.xlabel('Instellation [S/S0]')
 plt.ylabel('Effective temperature [K]')
 for nb in range(numb):
@@ -283,7 +286,7 @@ for nb in range(numb):
 #     plt.plot(emSlim, Tlist, color='C0')
 #     plt.plot(rvSlim, Tlist, color='C1')
 #     plt.axis([2, 0.2, 2600, 7200])
-#     plt.title('Habitable zone track of '+bodies[nb])
+#     plt.title('Habitable zone track of '+bodies[nb]+'(Dartmouth)')
 #     plt.xlabel('Instellation [S/S0]')
 #     plt.ylabel('Effective temperature [K]')
 #     plt.plot(Seff[nb][cind:],Te[cind:],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb]+': '+str(strYears[nb])+' years in HZ')

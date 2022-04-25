@@ -17,7 +17,7 @@ maxS = 1.5 # S0. Arbitrary upper cut-off value for plotting purposes
 # file reading and data arrangement
 track = []
 
-filename = "tracks/suntrack_parcol_Zinit0.01774_etaReimers0.2.dat"
+filename = "tracks/suntrack_parcol_Zinit0.01774_etaReimers0.3.dat"
 filenum = filename[-7:-4]
 
 with open(filename) as f:
@@ -51,7 +51,7 @@ cind = min(range(n-1), key=lambda i: abs(logL[i]))
 plt.figure()
 plt.semilogy(age[cind:],L[cind:],'-', color = 'y')
 plt.gca().yaxis.set_ticks_position('both')
-plt.title('Change in luminosity')
+plt.title('Change in luminosity (PARSEC)')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')
 plt.savefig('Plots/'+filenum+'_no-zoom.pdf')
@@ -59,14 +59,14 @@ plt.savefig('Plots/'+filenum+'_no-zoom.pdf')
 # plt.figure()
 # plt.plot(age[cind:],L[cind:],'-', color = 'y')
 # plt.gca().yaxis.set_ticks_position('both')
-# plt.title('Change in luminosity')
+# plt.title('Change in luminosity (PARSEC)')
 # plt.xlabel('Age of the Sun [yr]')
 # plt.ylabel('Luminosity [L_sun]')
 
 # plt.figure()
 # plt.plot(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y')
 # plt.gca().yaxis.set_ticks_position('both')
-# plt.title('Half-zoomed change in luminosity')
+# plt.title('Half-zoomed change in luminosity (PARSEC)')
 # plt.axis([1.15e10, 1.25e10, 0, 2600])
 # plt.xlabel('Age of the Sun [yr]')
 # plt.ylabel('Luminosity [L_sun]')
@@ -74,7 +74,7 @@ plt.savefig('Plots/'+filenum+'_no-zoom.pdf')
 # plt.figure()
 # plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
 # plt.gca().yaxis.set_ticks_position('both')
-# plt.title('Half-zoomed change in luminosity')
+# plt.title('Half-zoomed change in luminosity (PARSEC)')
 # plt.gca().set_xlim(1.15e10, 1.25e10)
 # plt.xlabel('Age of the Sun [yr]')
 # plt.ylabel('Luminosity [L_sun]')
@@ -84,7 +84,7 @@ plt.savefig('Plots/'+filenum+'_no-zoom.pdf')
 # plt.figure()
 # plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
 # plt.gca().yaxis.set_ticks_position('both')
-# plt.title('Zoomed change in luminosity')
+# plt.title('Zoomed change in luminosity (PARSEC)')
 # plt.gca().set_xlim(1.19e10, 1.202e10)
 # plt.xlabel('Age of the Sun [yr]')
 # plt.ylabel('Luminosity [L_sun]')
@@ -95,7 +95,7 @@ if filenum == '0.2':
     plt.figure()
     plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
     plt.gca().yaxis.set_ticks_position('both')
-    plt.title('Second zoomed change in luminosity')
+    plt.title('Second zoomed change in luminosity (PARSEC)')
     plt.gca().set_xlim(1.21e10, 1.215e10)
     plt.xlabel('Age of the Sun [yr]')
     plt.ylabel('Luminosity [L_sun]')
@@ -107,7 +107,7 @@ if filenum == '0.2':
 # plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
 # plt.xlabel('Age of the Sun [yr]')
 # plt.ylabel('Effective temperature [K]')
-# plt.title('Change in temperature')
+# plt.title('Change in temperature (PARSEC)')
 # plt.legend()
 # plt.savefig('Plots/'+filenum+'_Te_no-zoom.pdf')
 
@@ -115,7 +115,7 @@ if filenum == '0.2':
 # plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
 # plt.xlabel('Age of the Sun [yr]')
 # plt.ylabel('Effective temperature [K]')
-# plt.title('Half-zoomed change in temperature')
+# plt.title('Half-zoomed change in temperature (PARSEC)')
 # plt.gca().set_xlim(1.15e10, 1.25e10)
 # plt.legend()
 # plt.savefig('Plots/'+filenum+'_Te_half-zoomed.pdf')
@@ -124,7 +124,7 @@ if filenum == '0.2':
 # plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
 # plt.xlabel('Age of the Sun [yr]')
 # plt.ylabel('Effective temperature [K]')
-# plt.title('Zoomed change in temperature')
+# plt.title('Zoomed change in temperature (PARSEC)')
 # plt.gca().set_xlim(1.19e10, 1.202e10)
 # plt.legend()
 # plt.savefig('Plots/'+filenum+'_Te_zoomed.pdf')
@@ -134,7 +134,7 @@ if filenum == '0.2':
 #     plt.semilogy(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange', label=filenum)
 #     plt.xlabel('Age of the Sun [yr]')
 #     plt.ylabel('Effective temperature [K]')
-#     plt.title('Second zoomed change in temperature')
+#     plt.title('Second zoomed change in temperature (PARSEC)')
 #     plt.gca().set_xlim(1.21e10, 1.215e10)
 #     plt.legend()
 #     plt.savefig('Plots/'+filenum+'_Te_zoomed2.pdf')
@@ -191,23 +191,22 @@ def EarlyMars(T):
     Tast = T-5780
     return f0 + f1*Tast + f2*Tast**2 + f3*Tast**3 + f4*Tast**4
 
+# choose which HZ boundary definition to use
+# funclist = [IHZKopp, OHZKopp]
+funclist = [RecentVenus, EarlyMars]
+
 plt.figure()
 for nb in range(numb):
     plt.semilogy(age[cind:],Seff[nb][cind:],'-',linewidth=2,color=colors[nb],label=bodies[nb])
 plt.gca().yaxis.set_ticks_position('both')
 plt.gca().set_xlim(left= 1.1e10)
-plt.semilogy(age[cind:], [IHZKopp(T) for T in Te[cind:]], color='r', linestyle='--', linewidth=1.5)
-plt.semilogy(age[cind:], [OHZKopp(T) for T in Te[cind:]], color='b', linestyle='--', linewidth=1.5)
-# for T in [5780]:
-#     plt.axhline(RecentVenus(T), color='r',linewidth=1)
-#     plt.axhline(EarlyMars(T), color='b',linewidth=1)
-plt.title('Change in instellation')
+plt.semilogy(age[cind:], [funclist[0](T) for T in Te[cind:]], color='r', linestyle='--', linewidth=1.5)
+plt.semilogy(age[cind:], [funclist[1](T) for T in Te[cind:]], color='b', linestyle='--', linewidth=1.5)
+plt.title('Change in instellation (PARSEC)')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Instellation received by solar system body [S/S0]')
 plt.legend()
 # plt.savefig('Plots/Instellation'+filenum+'.pdf')
-
-funclist = [IHZKopp, OHZKopp]
 
 inSlim = [IHZKopp(T) for T in Tlist] # inner HZ boundary limit
 outSlim = [OHZKopp(T) for T in Tlist] # outer HZ boundary limit
@@ -215,8 +214,8 @@ rvSlim = [RecentVenus(T) for T in Tlist] # optimistic inner HZ
 emSlim = [EarlyMars(T) for T in Tlist] # optimistic outer HZ
 
 # Find the S limit for a given Te from the stellar track
-leftlimit = [IHZKopp(T) for T in Te[cind:]]
-rightlimit = [OHZKopp(T) for T in Te[cind:]]
+leftlimit = [funclist[0](T) for T in Te[cind:]]
+rightlimit = [funclist[1](T) for T in Te[cind:]]
 # find indices closest to inner and outer HZ boundary for each body 
 leftdiff = [[Scut[nb][i]-leftlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)] # differences between current S and S at the boundary (same Te)
 leftindex = [leftdiff[nb].index(list(filter(lambda i: i>0, leftdiff[nb]))[0])+cind for nb in range(numb)] # first element OUTSIDE IHZ
@@ -229,6 +228,8 @@ inIHZ = [[leftlimit[i]>Scut[nb][i] for i in range(len(Scut[nb]))] for nb in rang
 inOHZ = [[Scut[nb][i]>rightlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)]
 # Boolean HZ. perhaps alternate way of getting indices. Does not distinguish IHZ and OHZ. 
 booleanHZ = [[inIHZ[nb][i] and inOHZ[nb][i] for i in range(len(Scut[nb]))] for nb in range(numb)]
+for nb in range(numb):
+    booleanHZ[nb][-1]=False # Stupid way to ensure that the habitablity time calculations work even if you have a track too short to plot all the timespans inside HZ
 # for nb in range(numb): # plotting is for working purposes
     # plt.figure()
     # plt.plot(range(len(leftlimit)), booleanHZ[nb], color = colors[nb], label=bodies[nb])
@@ -253,7 +254,7 @@ plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', label
 plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', color = 'g')
 plt.xlabel('Effective temperature [K]')
 plt.ylabel('Luminosity [L_sun]')
-plt.title('HR-esque diagram')
+plt.title('HR-esque diagram (PARSEC)')
 plt.gca().invert_xaxis()
 plt.legend()
 plt.savefig('Plots/'+filenum+'_HR-esque.pdf')
@@ -267,8 +268,8 @@ Sstarts = [[Scut[nb][x-1:x+1] for x in truestarts[nb]] for nb in range(numb)] # 
 Sstops = [[Scut[nb][x:x+2] for x in truestops[nb]] for nb in range(numb)] # [last S inside, first S outside]
 agestarts = [[age[cind+x-1:cind+x+1] for x in truestarts[nb]] for nb in range(numb)] # same as above
 agestops = [[age[cind+x:cind+x+2] for x in truestops[nb]] for nb in range(numb)]
-meanTestarts = [[(Te[x+cind-1]+Te[x+cind])/2 for x in truestarts[nb]] for nb in range(numb)]
-meanTestops = [[(Te[x+cind]+Te[x+cind+1])/2 for x in truestops[nb]] for nb in range(numb)]
+meanTestarts = [[np.mean(Te[cind+x-1:cind+x+1]) for x in truestarts[nb]] for nb in range(numb)]
+meanTestops = [[np.mean(Te[cind+x:cind+x+2]) for x in truestops[nb]] for nb in range(numb)]
 
 startpolys = [[list(np.polyfit(Sstarts[nb][i], agestarts[nb][i], 1)) for i in range(len(Sstarts[nb]))] for nb in range(numb)] # list of polynomial coefficients for age(S) for each time entering HZ
 stoppolys = [[list(np.polyfit(Sstops[nb][i], agestops[nb][i], 1)) for i in range(len(Sstops[nb]))] for nb in range(numb)] # list of polynomial coefficients for age(S) for each time leaving HZ
@@ -285,7 +286,7 @@ for nb in range(numb):
     plt.legend()
 plt.xticks(range(numb), bodies)
 plt.ylabel('timespan [years]')
-plt.title('Timespans inside the Habitable Zone')
+plt.title('Timespans inside the Habitable Zone (PARSEC)')
 # plt.savefig('Plots/timeinHZ'+filenum+'.pdf')
 
 for nb in range(numb):
@@ -295,7 +296,7 @@ for nb in range(numb):
     plt.gca().set_xlim(right=age[-1])
     plt.xlabel('[years]')
     plt.ylabel('timespan [years]')
-    plt.title('Timespans inside the Habitable Zone')
+    plt.title('Timespans inside the Habitable Zone (PARSEC)')
     plt.legend()
 
 strYears = [['0' if x == 0 else "{:.1e}".format(x) for x in allyearsinHZ[nb]] for nb in range(numb)] # list of strings, scientific notation 1 decimal
@@ -310,7 +311,7 @@ plt.gca().yaxis.set_ticks_position('both')
 plt.plot(inSlim, Tlist, color='r')
 plt.plot(outSlim, Tlist, color='b')
 plt.axis([1.25, 0.2, 2600, 7200])
-plt.title('First pass through HZ')
+plt.title('First pass through HZ (PARSEC)')
 plt.xlabel('Instellation [S/S0]')
 plt.ylabel('Effective temperature [K]')
 for nb in range(numb):
@@ -328,7 +329,7 @@ for nb in range(numb):
 #     plt.plot(emSlim, Tlist, color='C0')
 #     plt.plot(rvSlim, Tlist, color='C1')
 #     plt.axis([2, 0.2, 2600, 7200])
-#     plt.title('Habitable zone track of '+bodies[nb])
+#     plt.title('Habitable zone track of '+bodies[nb]+'(PARSEC)')
 #     plt.xlabel('Instellation [S/S0]')
 #     plt.ylabel('Effective temperature [K]')
 #     plt.plot(Seff[nb][cind:],Te[cind:],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb]+': '+str(strYears[nb])+' years in HZ')
