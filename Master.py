@@ -29,6 +29,8 @@ track[0].pop(0) # removes the # from start of column names
 track.pop(-1)   # removes ['#track', 'terminated'] statement
     
 n = len(track)
+if filenum == '0.2':
+    n = 326
 
 age = [float(track[i][3]) for i in range(1,n)]
 logL = [float(track[i][5]) for i in range(1,n)]
@@ -91,16 +93,6 @@ plt.savefig('Plots/'+filenum+'_no-zoom.pdf')
 # plt.legend()
 # plt.savefig('Plots/'+filenum+'_zoomed.pdf')
 
-if filenum == '0.2':
-    plt.figure()
-    plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
-    plt.gca().yaxis.set_ticks_position('both')
-    plt.title('Second zoomed change in luminosity (PARSEC)')
-    plt.gca().set_xlim(1.21e10, 1.215e10)
-    plt.xlabel('Age of the Sun [yr]')
-    plt.ylabel('Luminosity [L_sun]')
-    plt.legend()
-    plt.savefig('Plots/'+filenum+'_zoomed2.pdf')
 
 # plot Te w.r.t. stellar age
 # plt.figure()
@@ -145,7 +137,7 @@ if filenum == '0.2':
 # parameters for each body considered
 bodies = ['Jupiter','Saturn','Uranus','Neptune', 'Pluto'] # name of the bodies
 colors = ['xkcd:light brown','xkcd:peach','xkcd:light blue','xkcd:bright blue', 'xkcd:maroon'] # color of each body for plotting
-distances = [5.2, 9.6, 19.2, 30.0, 39.5] # AU, https://www.jpl.nasa.gov/edu/pdfs/ssbeads_answerkey.pdf
+distances = [5.2, 9.54, 19.2, 30.0, 39.5] # AU, https://www.jpl.nasa.gov/edu/pdfs/ssbeads_answerkey.pdf
 numb = len(bodies)
 
 # calculations for each body
@@ -192,21 +184,23 @@ def EarlyMars(T):
     return f0 + f1*Tast + f2*Tast**2 + f3*Tast**3 + f4*Tast**4
 
 # choose which HZ boundary definition to use
-# funclist = [IHZKopp, OHZKopp]
-funclist = [RecentVenus, EarlyMars]
+funclist = [IHZKopp, OHZKopp]
+boundaries = 'Kopp'
+# funclist = [RecentVenus, EarlyMars]
+# boundaries = 'RVEM'
 
 plt.figure()
 for nb in range(numb):
     plt.semilogy(age[cind:],Seff[nb][cind:],'-',linewidth=2,color=colors[nb],label=bodies[nb])
 plt.gca().yaxis.set_ticks_position('both')
-plt.gca().set_xlim(left= 1.1e10)
+plt.gca().set_xlim(left= 1.125e10, right= 1.215e10)
 plt.semilogy(age[cind:], [funclist[0](T) for T in Te[cind:]], color='r', linestyle='--', linewidth=1.5)
 plt.semilogy(age[cind:], [funclist[1](T) for T in Te[cind:]], color='b', linestyle='--', linewidth=1.5)
 plt.title('Change in instellation (PARSEC)')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Instellation received by solar system body [S/S0]')
 plt.legend()
-# plt.savefig('Plots/Instellation'+filenum+'.pdf')
+plt.savefig('Plots/PARSEC-instellation'+filenum+'-'+boundaries+'.pdf')
 
 inSlim = [IHZKopp(T) for T in Tlist] # inner HZ boundary limit
 outSlim = [OHZKopp(T) for T in Tlist] # outer HZ boundary limit
@@ -216,13 +210,13 @@ emSlim = [EarlyMars(T) for T in Tlist] # optimistic outer HZ
 # Find the S limit for a given Te from the stellar track
 leftlimit = [funclist[0](T) for T in Te[cind:]]
 rightlimit = [funclist[1](T) for T in Te[cind:]]
-# find indices closest to inner and outer HZ boundary for each body 
-leftdiff = [[Scut[nb][i]-leftlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)] # differences between current S and S at the boundary (same Te)
-leftindex = [leftdiff[nb].index(list(filter(lambda i: i>0, leftdiff[nb]))[0])+cind for nb in range(numb)] # first element OUTSIDE IHZ
-rightdiff = [[Scut[nb][i]-rightlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)]
-rightindex = [cind if Scut[nb][0]>rightlimit[0] else rightdiff[nb].index(list(filter(lambda i: i>0, rightdiff[nb]))[0])+cind-1 for nb in range(numb)] # last point outside OHZ
-# consider case where the body at no point is outside the outer HZ boundary
-# in that case, time in HZ starts counting at current time
+# # find indices closest to inner and outer HZ boundary for each body 
+# leftdiff = [[Scut[nb][i]-leftlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)] # differences between current S and S at the boundary (same Te)
+# leftindex = [leftdiff[nb].index(list(filter(lambda i: i>0, leftdiff[nb]))[0])+cind for nb in range(numb)] # first element OUTSIDE IHZ
+# rightdiff = [[Scut[nb][i]-rightlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)]
+# rightindex = [cind if Scut[nb][0]>rightlimit[0] else rightdiff[nb].index(list(filter(lambda i: i>0, rightdiff[nb]))[0])+cind-1 for nb in range(numb)] # last point outside OHZ
+# # consider case where the body at no point is outside the outer HZ boundary
+# # in that case, time in HZ starts counting at current time
     
 inIHZ = [[leftlimit[i]>Scut[nb][i] for i in range(len(Scut[nb]))] for nb in range(numb)]
 inOHZ = [[Scut[nb][i]>rightlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)]
@@ -298,6 +292,7 @@ for nb in range(numb):
     plt.ylabel('timespan [years]')
     plt.title('Timespans inside the Habitable Zone (PARSEC)')
     plt.legend()
+    plt.savefig('Plots/PARSEC'+filenum+bodies[nb]+'TIHZ'+boundaries+'.pdf')
 
 strYears = [['0' if x == 0 else "{:.1e}".format(x) for x in allyearsinHZ[nb]] for nb in range(numb)] # list of strings, scientific notation 1 decimal
 
@@ -329,7 +324,7 @@ for nb in range(numb):
 #     plt.plot(emSlim, Tlist, color='C0')
 #     plt.plot(rvSlim, Tlist, color='C1')
 #     plt.axis([2, 0.2, 2600, 7200])
-#     plt.title('Habitable zone track of '+bodies[nb]+'(PARSEC)')
+#     plt.title('Habitable zone track of '+bodies[nb]+' (PARSEC)')
 #     plt.xlabel('Instellation [S/S0]')
 #     plt.ylabel('Effective temperature [K]')
 #     plt.plot(Seff[nb][cind:],Te[cind:],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb]+': '+str(strYears[nb])+' years in HZ')

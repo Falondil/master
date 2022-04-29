@@ -73,13 +73,15 @@ plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')    
 
 plt.figure()
-plt.semilogy(age[cind:n1],L[cind:n1],linestyle='-', marker='.', color='y', mfc = 'gray', markeredgecolor='C0')
-plt.semilogy(age[n1-1:],L[n1-1:],linestyle='-', marker='.', color = 'y', mfc = 'gray', markeredgecolor='C1')
+plt.semilogy(age[cind:n1],L[cind:n1],linestyle='-', marker='.', color='y', mfc = 'gray', markeredgecolor='C0', label = 'pre-MS to RGB')
+plt.semilogy(age[n1-1:],L[n1-1:],linestyle='-', marker='.', color = 'y', mfc = 'gray', markeredgecolor='C1', label = 'HB to AGB')
 plt.gca().yaxis.set_ticks_position('both')
 plt.title('Half-zoomed change in luminosity (Dartmouth)')
-plt.gca().set_xlim(1.20e10, 1.25e10)
+plt.gca().set_xlim(1.15e10, 1.25e10)
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Luminosity [L_sun]')
+plt.legend()
+plt.savefig('Plots/DartmouthConcatenation.pdf')
 
 # plot Te w.r.t. stellar age
 plt.figure()
@@ -94,7 +96,7 @@ plt.title('Change in temperature (Dartmouth)')
 # parameters for each body considered
 bodies = ['Jupiter','Saturn','Uranus','Neptune', 'Pluto'] # name of the bodies
 colors = ['xkcd:light brown','xkcd:peach','xkcd:light blue','xkcd:bright blue', 'xkcd:maroon'] # color of each body for plotting
-distances = [5.2, 9.6, 19.2, 30.0, 39.5] # AU, https://www.jpl.nasa.gov/edu/pdfs/ssbeads_answerkey.pdf
+distances = [5.2, 9.54, 19.2, 30.0, 39.5] # AU, https://www.jpl.nasa.gov/edu/pdfs/ssbeads_answerkey.pdf
 numb = len(bodies)
 
 # calculations for each body
@@ -141,8 +143,10 @@ def EarlyMars(T):
     return f0 + f1*Tast + f2*Tast**2 + f3*Tast**3 + f4*Tast**4
 
 # choose which HZ boundary definition to use
-# funclist = [IHZKopp, OHZKopp]
-funclist = [RecentVenus, EarlyMars]
+funclist = [IHZKopp, OHZKopp]
+boundaries = 'Kopp'
+# funclist = [RecentVenus, EarlyMars]
+# boundaries = 'RVEM'
 
 # Plotting instellation at each body w.r.t. stellar age
 plt.figure()
@@ -156,9 +160,9 @@ plt.legend()
 
 plt.figure()
 for nb in range(numb):
-    plt.semilogy(age[cind:],Seff[nb][cind:],'-',color=colors[nb],label=bodies[nb])
+    plt.semilogy(age[cind:],Seff[nb][cind:],'-',linewidth=2,color=colors[nb],label=bodies[nb])
 plt.gca().yaxis.set_ticks_position('both')
-plt.gca().set_xlim(left= 1.1e10)
+plt.gca().set_xlim(left= 1.15e10, right= 1.24e10)
 plt.semilogy(age[cind:], [funclist[0](T) for T in Te[cind:]], color='r', linewidth=1.5, linestyle='--')
 plt.semilogy(age[cind:], [funclist[1](T) for T in Te[cind:]], color='b', linewidth=1.5, linestyle='--')
 # for T in [5780]:
@@ -168,6 +172,7 @@ plt.title('Change in instellation (Dartmouth)')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Instellation received by solar system body [S/S0]')
 plt.legend()
+plt.savefig('Plots/Dartmouth-instellation-'+boundaries+'.pdf')
 
 inSlim = [IHZKopp(T) for T in Tlist] # inner HZ boundary limit
 outSlim = [OHZKopp(T) for T in Tlist] # outer HZ boundary limit
@@ -256,6 +261,7 @@ for nb in range(numb):
     plt.ylabel('timespan [years]')
     plt.title('Timespans inside the Habitable Zone (Dartmouth)')
     plt.legend()
+    plt.savefig('Plots/Dartmouth'+bodies[nb]+'TIHZ'+boundaries+'.pdf')
 
 strYears = [['0' if x == 0 else "{:.1e}".format(x) for x in allyearsinHZ[nb]] for nb in range(numb)] # list of strings, scientific notation 1 decimal
 
@@ -286,9 +292,26 @@ for nb in range(numb):
 #     plt.plot(emSlim, Tlist, color='C0')
 #     plt.plot(rvSlim, Tlist, color='C1')
 #     plt.axis([2, 0.2, 2600, 7200])
-#     plt.title('Habitable zone track of '+bodies[nb]+'(Dartmouth)')
+#     plt.title('Habitable zone track of '+bodies[nb]+' (Dartmouth)')
 #     plt.xlabel('Instellation [S/S0]')
 #     plt.ylabel('Effective temperature [K]')
 #     plt.plot(Seff[nb][cind:],Te[cind:],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb]+': '+str(strYears[nb])+' years in HZ')
 #     plt.plot(Seff[nb][-1],Te[-1],'x',color='k')
 #     plt.legend(loc='upper right')
+
+
+
+# #----------------------------------EXTRA---------------------------------------
+# # Extra plotting code, must be run manually
+
+
+# plt.figure()
+# for nb in range(numb):
+#     plt.bar([nb + 0.25*i for i in range(len(allyearsinHZ[nb]))], allyearsinHZ[nb], width=0.25, color=colors[nb])
+#     plt.bar([nb + 0.25*i for i in range(len(allyearsinHZPARSEC[nb]))], allyearsinHZPARSEC[nb], width=0.25, fill = False, hatch='//')
+# plt.xticks(range(numb), bodies)
+# plt.ylabel('timespan [years]')
+# plt.title('Timespans inside the Habitable Zone')
+# plt.bar(0, height=0, width=0, facecolor='grey', label='Dartmouth')
+# plt.bar(0, height = 0, width=0, fill = False, hatch='//', label ='PARSEC')
+# plt.legend()
