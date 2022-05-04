@@ -17,7 +17,7 @@ maxS = 1.5 # S0. Arbitrary upper cut-off value for plotting purposes
 # file reading and data arrangement
 track = []
 
-filename = "tracks/suntrack_parcol_Zinit0.01774_etaReimers0.3.dat"
+filename = "tracks/suntrack_parcol_Zinit0.01774_etaReimers0.2.dat"
 filenum = filename[-7:-4]
 
 with open(filename) as f:
@@ -184,10 +184,10 @@ def EarlyMars(T):
     return f0 + f1*Tast + f2*Tast**2 + f3*Tast**3 + f4*Tast**4
 
 # choose which HZ boundary definition to use
-funclist = [IHZKopp, OHZKopp]
-boundaries = 'Kopp'
-# funclist = [RecentVenus, EarlyMars]
-# boundaries = 'RVEM'
+# funclist = [IHZKopp, OHZKopp]
+# boundaries = 'Kopp'
+funclist = [RecentVenus, EarlyMars]
+boundaries = 'RVEM'
 
 plt.figure()
 for nb in range(numb):
@@ -244,14 +244,14 @@ trueranges = [[[truestarts[nb][i], truestops[nb][i]] for i in range(len(truestar
 
 # plot HR esque diagram
 plt.figure()
-plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', label=filenum, mfc = 'gray', markeredgecolor='k')
+plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', label=filenum+' '+boundaries, mfc = 'gray', markeredgecolor='k')
 plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', color = 'g')
 plt.xlabel('Effective temperature [K]')
 plt.ylabel('Luminosity [L_sun]')
 plt.title('HR-esque diagram (PARSEC)')
 plt.gca().invert_xaxis()
 plt.legend()
-plt.savefig('Plots/'+filenum+'_HR-esque.pdf')
+plt.savefig('Plots/'+filenum+boundaries+'_HR-esque.pdf')
 
 # preliminary timespan calculation
 approxyearsinHZ = [[age[cind+x[1]]-age[cind+x[0]] for x in trueranges[nb]] for nb in range(numb)]
@@ -315,18 +315,19 @@ for nb in range(numb):
     plt.legend()
 # plt.savefig('Plots/firstHZ'+filenum+'.pdf')
 
-# # Same plot for each planet, but full
-# for nb in range(numb):
-#     plt.figure()
-#     plt.gca().set_aspect(aspect = 1.8/5780) # arbitrary
-#     plt.plot(inSlim, Tlist, color='r')
-#     plt.plot(outSlim, Tlist, color='b')
-#     plt.plot(emSlim, Tlist, color='C0')
-#     plt.plot(rvSlim, Tlist, color='C1')
-#     plt.axis([2, 0.2, 2600, 7200])
-#     plt.title('Habitable zone track of '+bodies[nb]+' (PARSEC)')
-#     plt.xlabel('Instellation [S/S0]')
-#     plt.ylabel('Effective temperature [K]')
-#     plt.plot(Seff[nb][cind:],Te[cind:],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb]+': '+str(strYears[nb])+' years in HZ')
-#     plt.plot(Seff[nb][-1],Te[-1],'x',color='k')
-#     plt.legend(loc='upper right')
+# Same plot for each planet, but full
+for nb in range(numb):
+    plt.figure()
+    plt.gca().set_aspect(aspect = 1.8/5780) # arbitrary
+    plt.plot(inSlim, Tlist, color='r')
+    plt.plot(outSlim, Tlist, color='b')
+    plt.plot(emSlim, Tlist, color='C0')
+    plt.plot(rvSlim, Tlist, color='C1')
+    plt.axis([2, 0.2, 2600, 7200])
+    plt.title('Habitable zone track of '+bodies[nb]+' (PARSEC)')
+    plt.xlabel('Instellation [S/S0]')
+    plt.ylabel('Effective temperature [K]')
+    plt.plot(Seff[nb][cind:],Te[cind:],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb]+': '+str(strYears[nb])+' years in HZ')
+    plt.plot(Seff[nb][-1],Te[-1],'x',color='k')
+    plt.legend(loc='upper right')
+    

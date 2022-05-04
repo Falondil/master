@@ -216,12 +216,13 @@ trueranges = [[[truestarts[nb][i], truestops[nb][i]] for i in range(len(truestar
 
 # plot HR esque diagram
 plt.figure()
-plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', mfc = 'gray', markeredgecolor='k')
+plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', mfc = 'gray', markeredgecolor='k', label=boundaries)
 plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', color = 'g')
 plt.xlabel('Effective temperature [K]')
 plt.ylabel('Luminosity [L_sun]')
 plt.title('HR-esque diagram (Dartmouth)')
 plt.gca().invert_xaxis()
+plt.legend()
 
 # preliminary timespan calculation
 approxyearsinHZ = [[age[cind+x[1]]-age[cind+x[0]] for x in trueranges[nb]] for nb in range(numb)]
