@@ -17,7 +17,7 @@ maxS = 1.5 # S0. Arbitrary upper cut-off value for plotting purposes
 # file reading and data arrangement
 track = []
 
-filename = "tracks/suntrack_parcol_Zinit0.01774_etaReimers0.2.dat"
+filename = "tracks/suntrack_parcol_Zinit0.01774_etaReimers0.3.dat"
 filenum = filename[-7:-4]
 
 with open(filename) as f:
@@ -37,9 +37,9 @@ logL = [float(track[i][5]) for i in range(1,n)]
 logTe = [float(track[i][6]) for i in range(1,n)]
 
 # Instant Helium flash jump to quiescent Helium fusion
-age1 = age[:195]
-age2 = [a-(age[195]-age[194]) for a in age[195:]]
-age = age1+age2
+# age1 = age[:195]
+# age2 = [a-(age[195]-age[194]) for a in age[195:]]
+# age = age1+age2
 
 #----------------------------------PART 2--------------------------------------
 # general calculations (for any body)
@@ -68,20 +68,21 @@ plt.savefig('Plots/'+filenum+'_no-zoom.pdf')
 # plt.figure()
 # plt.plot(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y')
 # plt.gca().yaxis.set_ticks_position('both')
-# plt.title('Half-zoomed change in luminosity (PARSEC)')
+# plt.title('Change in luminosity (PARSEC)')
 # plt.axis([1.15e10, 1.25e10, 0, 2600])
 # plt.xlabel('Age of the Sun [yr]')
 # plt.ylabel('Luminosity [L_sun]')
 
-# plt.figure()
-# plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
-# plt.gca().yaxis.set_ticks_position('both')
-# plt.title('Half-zoomed change in luminosity (PARSEC)')
-# plt.gca().set_xlim(1.15e10, 1.25e10)
-# plt.xlabel('Age of the Sun [yr]')
-# plt.ylabel('Luminosity [L_sun]')
-# plt.legend()
-# plt.savefig('Plots/'+filenum+'_half-zoomed.pdf')
+plt.figure()
+plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
+plt.gca().yaxis.set_ticks_position('both')
+plt.title('Change in luminosity (PARSEC)')
+plt.gca().set_xlim(1.15e10, 1.25e10)
+plt.xlabel('Age of the Sun [yr]')
+plt.ylabel('Luminosity [L_sun]')
+plt.legend()
+plt.semilogy(age[194], L[194], 'o', markerfacecolor='None', markeredgecolor='g', markersize=10)
+plt.savefig('Plots/'+filenum+'_half-zoomed.pdf')
 
 # plt.figure()
 # plt.semilogy(age[cind:],L[cind:],linestyle='-', marker='.', color = 'y', label=filenum, mfc = 'gray', markeredgecolor='k')
@@ -184,10 +185,13 @@ def EarlyMars(T):
     return f0 + f1*Tast + f2*Tast**2 + f3*Tast**3 + f4*Tast**4
 
 # choose which HZ boundary definition to use
-# funclist = [IHZKopp, OHZKopp]
-# boundaries = 'Kopp'
-funclist = [RecentVenus, EarlyMars]
-boundaries = 'RVEM'
+funclist = [IHZKopp, OHZKopp]
+boundaries = 'Kopp'
+boundword = 'Conservative'
+
+# funclist = [RecentVenus, EarlyMars]
+# boundaries = 'RVEM'
+# boundword = 'Optimistic'
 
 plt.figure()
 for nb in range(numb):
@@ -280,7 +284,7 @@ for nb in range(numb):
     plt.legend()
 plt.xticks(range(numb), bodies)
 plt.ylabel('timespan [years]')
-plt.title('Timespans inside the Habitable Zone (PARSEC)')
+plt.title('Timespans inside the '+boundword+' Habitable Zone (PARSEC)')
 # plt.savefig('Plots/timeinHZ'+filenum+'.pdf')
 
 for nb in range(numb):
@@ -290,7 +294,7 @@ for nb in range(numb):
     plt.gca().set_xlim(right=age[-1])
     plt.xlabel('[years]')
     plt.ylabel('timespan [years]')
-    plt.title('Timespans inside the Habitable Zone (PARSEC)')
+    plt.title('Timespans inside the '+boundword+' Habitable Zone (PARSEC)')
     plt.legend()
     plt.savefig('Plots/PARSEC'+filenum+bodies[nb]+'TIHZ'+boundaries+'.pdf')
 
@@ -306,28 +310,28 @@ plt.gca().yaxis.set_ticks_position('both')
 plt.plot(inSlim, Tlist, color='r')
 plt.plot(outSlim, Tlist, color='b')
 plt.axis([1.25, 0.2, 2600, 7200])
-plt.title('First pass through HZ (PARSEC)')
+plt.title('First pass through conservative HZ (PARSEC)')
 plt.xlabel('Instellation [S/S0]')
 plt.ylabel('Effective temperature [K]')
 for nb in range(numb):
     plt.plot(Seff[nb][cind:topi[nb]],Te[cind:topi[nb]],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb])
     plt.plot(Seff[nb][cind],Te[cind],'o',color='k')
     plt.legend()
-# plt.savefig('Plots/firstHZ'+filenum+'.pdf')
+plt.savefig('Plots/firstHZ'+filenum+'.pdf')
 
-# Same plot for each planet, but full
-for nb in range(numb):
-    plt.figure()
-    plt.gca().set_aspect(aspect = 1.8/5780) # arbitrary
-    plt.plot(inSlim, Tlist, color='r')
-    plt.plot(outSlim, Tlist, color='b')
-    plt.plot(emSlim, Tlist, color='C0')
-    plt.plot(rvSlim, Tlist, color='C1')
-    plt.axis([2, 0.2, 2600, 7200])
-    plt.title('Habitable zone track of '+bodies[nb]+' (PARSEC)')
-    plt.xlabel('Instellation [S/S0]')
-    plt.ylabel('Effective temperature [K]')
-    plt.plot(Seff[nb][cind:],Te[cind:],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb]+': '+str(strYears[nb])+' years in HZ')
-    plt.plot(Seff[nb][-1],Te[-1],'x',color='k')
-    plt.legend(loc='upper right')
+# # Same plot for each planet, but full
+# for nb in range(numb):
+#     plt.figure()
+#     plt.gca().set_aspect(aspect = 1.8/5780) # arbitrary
+#     plt.plot(inSlim, Tlist, color='r')
+#     plt.plot(outSlim, Tlist, color='b')
+#     plt.plot(emSlim, Tlist, color='C0')
+#     plt.plot(rvSlim, Tlist, color='C1')
+#     plt.axis([2, 0.2, 2600, 7200])
+#     plt.title(boundword+' habitable zone track of '+bodies[nb]+' (PARSEC)')
+#     plt.xlabel('Instellation [S/S0]')
+#     plt.ylabel('Effective temperature [K]')
+#     plt.plot(Seff[nb][cind:],Te[cind:],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb]+': '+str(strYears[nb])+' years in HZ')
+#     plt.plot(Seff[nb][-1],Te[-1],'x',color='k')
+#     plt.legend(loc='upper right')
     

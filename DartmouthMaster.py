@@ -145,8 +145,11 @@ def EarlyMars(T):
 # choose which HZ boundary definition to use
 funclist = [IHZKopp, OHZKopp]
 boundaries = 'Kopp'
+boundword = 'Conservative'
+
 # funclist = [RecentVenus, EarlyMars]
 # boundaries = 'RVEM'
+# boundword = 'Optimistic'
 
 # Plotting instellation at each body w.r.t. stellar age
 plt.figure()
@@ -165,9 +168,6 @@ plt.gca().yaxis.set_ticks_position('both')
 plt.gca().set_xlim(left= 1.15e10, right= 1.24e10)
 plt.semilogy(age[cind:], [funclist[0](T) for T in Te[cind:]], color='r', linewidth=1.5, linestyle='--')
 plt.semilogy(age[cind:], [funclist[1](T) for T in Te[cind:]], color='b', linewidth=1.5, linestyle='--')
-# for T in [5780]:
-#     plt.axhline(IHZKopp(T), color='r',linewidth=1)
-#     plt.axhline(OHZKopp(T), color='b',linewidth=1)
 plt.title('Change in instellation (Dartmouth)')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Instellation received by solar system body [S/S0]')
@@ -276,7 +276,7 @@ plt.gca().yaxis.set_ticks_position('both')
 plt.plot(inSlim, Tlist, color='r')
 plt.plot(outSlim, Tlist, color='b')
 plt.axis([1.25, 0.2, 2600, 7200])
-plt.title('First pass through HZ (Dartmouth)')
+plt.title('First pass through '+boundword+' HZ (Dartmouth)')
 plt.xlabel('Instellation [S/S0]')
 plt.ylabel('Effective temperature [K]')
 for nb in range(numb):
@@ -312,7 +312,11 @@ for nb in range(numb):
 #     plt.bar([nb + 0.25*i for i in range(len(allyearsinHZPARSEC[nb]))], allyearsinHZPARSEC[nb], width=0.25, fill = False, hatch='//')
 # plt.xticks(range(numb), bodies)
 # plt.ylabel('timespan [years]')
-# plt.title('Timespans inside the Habitable Zone')
+# plt.title('Timespans inside the '+boundword+' Habitable Zone')
 # plt.bar(0, height=0, width=0, facecolor='grey', label='Dartmouth')
 # plt.bar(0, height = 0, width=0, fill = False, hatch='//', label ='PARSEC')
 # plt.legend()
+
+
+# plt.savefig('Plots/'+boundaries+'-dartmouth+parsec-TIHZ.pdf')
+
