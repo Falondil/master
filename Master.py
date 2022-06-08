@@ -9,9 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #----------------------------------PART 1--------------------------------------
-# values
-Lsun = 3.828e26 # W
-S0 = 1360 # W m^-2
 maxS = 1.5 # S0. Arbitrary upper cut-off value for plotting purposes
 
 # file reading and data arrangement
@@ -37,14 +34,13 @@ logL = [float(track[i][5]) for i in range(1,n)]
 logTe = [float(track[i][6]) for i in range(1,n)]
 
 # Instant Helium flash jump to quiescent Helium fusion
-# age1 = age[:195]
-# age2 = [a-(age[195]-age[194]) for a in age[195:]]
-# age = age1+age2
+age1 = age[:195]
+age2 = [a-(age[195]-age[194]) for a in age[195:]]
+age = age1+age2
 
 #----------------------------------PART 2--------------------------------------
 # general calculations (for any body)
 L = [10**x for x in logL] # L_sun
-Lwatt = [Lsun*x for x in L] # Watt
 Te = [10**x for x in logTe] # K
 
 cind = min(range(n-1), key=lambda i: abs(logL[i]))
@@ -185,13 +181,13 @@ def EarlyMars(T):
     return f0 + f1*Tast + f2*Tast**2 + f3*Tast**3 + f4*Tast**4
 
 # choose which HZ boundary definition to use
-funclist = [IHZKopp, OHZKopp]
-boundaries = 'Kopp'
-boundword = 'Conservative'
+# funclist = [IHZKopp, OHZKopp]
+# boundaries = 'Kopp'
+# boundword = 'Conservative'
 
-# funclist = [RecentVenus, EarlyMars]
-# boundaries = 'RVEM'
-# boundword = 'Optimistic'
+funclist = [RecentVenus, EarlyMars]
+boundaries = 'RVEM'
+boundword = 'Optimistic'
 
 plt.figure()
 for nb in range(numb):
