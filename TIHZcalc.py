@@ -25,6 +25,9 @@ elif fileselect == '2':
 elif fileselect == '3':
     filename = "tracks/MIST1M.track.eep"
     solarmodel = 'MIST'
+elif fileselect == '4':
+    filename = "tracks/SolarCalibratedRGB.tab"
+    solarmodel = 'Solar PARSEC RGB'
 else:
     print('Invalid track choice')
     quit()
@@ -104,7 +107,7 @@ elif fileselect == '2':
     logTe = logTe1+logTe2
     
 # MIST does not require concatenation
-else:
+elif fileselect=='3':
     track = []
     with open(filename) as f:
         for line in f:
@@ -116,6 +119,19 @@ else:
     logTe = [float(track[i][11]) for i in range(12,1420)]
 
     n = len(age)+1
+else:
+    track = []
+    with open(filename) as f:
+        for line in f:
+            rowlist = line.split()
+            track.append(rowlist) 
+    track.pop(-1) # removes end row 
+    
+    n = len(track)
+    age = [float(track[i][2]) for i in range(5,n)]
+    logL = [float(track[i][4]) for i in range(5,n)]
+    logTe = [float(track[i][5]) for i in range(5,n)]
+    n = len(age)
     
 #----------------------------------PART 2--------------------------------------
 # general calculations (for any body)
@@ -160,7 +176,6 @@ barwidth = 0.3
 # calculations for each body
 Seff = [[x/d**2 for x in L] for d in distances] # S0
 Scut = [Seff[nb][cind:] for nb in range(numb)] # S0, effective instellations after current time
-roughLlimits = [[0.25*d**2, 0.9*d**2] for d in distances] # useful for graph reading
 
 topval = []
 topi = []
@@ -181,6 +196,7 @@ d0, d1, d2, d3, d4 = 0.3438, 5.8942e-5, 1.6558e-9, -3.0045e-12, -5.2983e-16 # ma
 e0, e1, e2, e3, e4 = 1.776, 2.136e-4, 2.533e-8, -1.332e-11, -3.097e-15 # recent venus
 f0, f1, f2, f3, f4 = 0.32, 5.547e-5, 1.526e-9, -2.874e-12, -5.011e-16 # early mars
 g0, g1, g2, g3, g4 = 1.0512, 1.3242e-4, 1.5418e-8, -7.9895e-12, -1.8328e-15 # runaway greenhouse
+h0, h1, h2, h3, h4 = 0.3050, 2.216e-5, 4.1913e-9, -1.3177e-12, 1.1796e-16 # Methane: 0.1 CH4/CO2. 
 
 Tlist = list(range(2600,7201,10)) 
 def IHZKopp(T): # moist greenhouse
@@ -188,7 +204,7 @@ def IHZKopp(T): # moist greenhouse
     return c0 + c1*Tast + c2*Tast**2 + c3*Tast**3 + c4*Tast**4
 
 def OHZKopp(T): # maximum greenhouse
-    Tast = T-5780 # T_asterisk from Kopparapu et al. 2013
+    Tast = T-5780
     return d0 + d1*Tast + d2*Tast**2 + d3*Tast**3 + d4*Tast**4
 
 def RecentVenus(T): # Recent Venus empiric limit
@@ -200,11 +216,15 @@ def EarlyMars(T): # Early Mars empiric limit
     return f0 + f1*Tast + f2*Tast**2 + f3*Tast**3 + f4*Tast**4
 
 def RunawayKopp(T): # runaway greenhouse
-    Tast = T-5780 # T_asterisk from Kopparapu et al. 2013
+    Tast = T-5780 
     return g0 + g1*Tast + g2*Tast**2 + g3*Tast**3 + g4*Tast**4
 
+def Methane(T): # 0.1 CH4/CO2 from Ramirez&Kaltenegger 2018
+    Tast = T-5780 
+    return h0 + h1*Tast + h2*Tast**2 + h3*Tast**3 + h4*Tast**4
+
 # choose which HZ boundary definition to use
-funclist = [IHZKopp, OHZKopp]
+funclist = [RunawayKopp, OHZKopp]
 boundaries = 'Kopp'
 boundword = 'Conservative'
 
@@ -235,6 +255,7 @@ plt.ylabel('Instellation received by solar system body [S/S0]')
 plt.legend()
 plt.savefig('Plots/'+solarmodel+'-instellation-'+boundaries+'.pdf')
 
+# HZ boundaries for plotting
 inSlim = [funclist[0](T) for T in Tlist] # inner HZ boundary limit
 outSlim = [funclist[1](T) for T in Tlist] # outer HZ boundary limit
 rvSlim = [RecentVenus(T) for T in Tlist] # optimistic inner HZ
@@ -273,6 +294,14 @@ anytrue = [i for i, x in enumerate(booleanHZ[nb]) if any(i in sl for sl in truei
 truestarts = [[i for i in trueindices[nb] if i-1 not in trueindices[nb]] for nb in range(numb)] # first true index in sequence
 truestops = [[i for i in trueindices[nb] if i+1 not in trueindices[nb]] for nb in range(numb)] # last true index in sequence
 trueranges = [[[truestarts[nb][i], truestops[nb][i]] for i in range(len(truestarts[nb]))] for nb in range(numb)]
+
+# calculate water-loss timespan
+runawaylimit = [RunawayKopp(T) for T in Te[cind:]] # limit for runaway greenhouse
+runawaybool = [[runawaylimit[i]<Scut[nb][i] for i in range(len(Scut[nb]))] for nb in range(numb)] # boolean where S>instellation limit of runaway
+runawayind = [[i for i, x in enumerate(runawaybool[nb]) if x] for nb in range(numb)] # find indices where runawaybool == True
+runawaystarts = [[i for i in runawayind[nb] if i-1 not in runawayind[nb]] for nb in range(numb)]
+runawaystops = [[i for i in runawayind[nb] if i+1 not in runawayind[nb]] for nb in range(numb)]
+waterlosstimes = [[age[cind+runawaystops[nb][i]]-age[cind+runawaystarts[nb][i]] for i in range(len(runawaystops[nb]))] for nb in range(numb)]
 
 # plot HR esque diagram
 plt.figure()
