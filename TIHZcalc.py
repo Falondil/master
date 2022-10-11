@@ -357,6 +357,17 @@ for nb in range(numb):
 
 strYears = [['0' if x == 0 else "{:.1e}".format(x) for x in allyearsinHZ[nb]] for nb in range(numb)] # list of strings, scientific notation 1 decimal
 
+# Water-loss time plot
+plt.figure()
+for nb in range(numb):
+    plt.bar([nb + 0.1666*i for i in range(len(waterlosstimes[nb]))], waterlosstimes[nb], width=0.1666, color=colors[nb])
+plt.axhline(2e7, linestyle = '--', color='C0', label='1 Earth Ocean lost')
+plt.axhline(4e7, linestyle = '-', color='C0', label='2 Earth Oceans lost')
+plt.legend()
+plt.xticks(range(numb), bodies)
+plt.ylabel('timespan [years]')
+plt.title('Waterloss timespans ('+solarmodel+')')
+
 # #----------------------------------PART 4b-------------------------------------
 # Habitable Zone plotting
 
