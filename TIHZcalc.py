@@ -168,10 +168,11 @@ numb = len(bodies)
 barwidth = 0.3
 
 # Uncomment these lines to get sum of TIHZ graph
-# distances = [5+barwidth*r for r in range(int(35/barwidth))]
-# bodies = [str(d) for d in distances]
-# numb = len(distances)
-# colors = ['C'+str(i) for i in range(numb)]
+startdistance = 5
+distances = [startdistance+barwidth*r for r in range(int((39.5+barwidth-startdistance)/barwidth))] # list from startdistance to roughly 39.5 AU 
+bodies = [str(d) for d in distances]
+numb = len(distances)
+colors = ['C'+str(i) for i in range(numb)]
 
 # calculations for each body
 Seff = [[x/d**2 for x in L] for d in distances] # S0
@@ -253,7 +254,6 @@ plt.title('Change in instellation ('+solarmodel+')')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Instellation received by solar system body [S/S0]')
 plt.legend()
-plt.savefig('Plots/'+solarmodel+'-instellation-'+boundaries+'.pdf')
 
 # HZ boundaries for plotting
 inSlim = [funclist[0](T) for T in Tlist] # inner HZ boundary limit
@@ -277,6 +277,7 @@ inOHZ = [[Scut[nb][i]>rightlimit[i] for i in range(len(Scut[nb]))] for nb in ran
 booleanHZ = [[inIHZ[nb][i] and inOHZ[nb][i] for i in range(len(Scut[nb]))] for nb in range(numb)]
 for nb in range(numb):
     booleanHZ[nb][-1]=False # Stupid way to ensure that the habitablity time calculations work even if you have a track too short to plot all the timespans inside HZ
+    booleanHZ[nb][0]=False # same as above, but for start
 # for nb in range(numb): # plotting is for working purposes
     # plt.figure()
     # plt.plot(range(len(leftlimit)), booleanHZ[nb], color = colors[nb], label=bodies[nb])
@@ -393,18 +394,36 @@ if len(distances)>10:
     
     plt.figure()
     for nb in range(numb):
-        plt.bar(distances[nb], allyearsinHZ[nb][0], width = barwidth, color=mapcolors[0])
+        plt.bar(distances[nb], allyearsinHZ[nb][0], width = barwidth, color=mapcolors[0], edgecolor='k', linewidth=0)
         prevTIHZ = allyearsinHZ[nb][0]
         for i in range(1, len(allyearsinHZ[nb])):
-            plt.bar(distances[nb], allyearsinHZ[nb][i], width = barwidth, bottom=prevTIHZ, color=mapcolors[1:][(i-1)%(len(mapcolors)-1)])
+            plt.bar(distances[nb], allyearsinHZ[nb][i], width = barwidth, bottom=prevTIHZ, color=mapcolors[1:][(i-1)%(len(mapcolors)-1)], edgecolor = 'k', linewidth=0)
             prevTIHZ = prevTIHZ+allyearsinHZ[nb][i]
     plt.xlabel('Orbiting radius [AU]')
     plt.ylabel('Timespan inside HZ [yr]')
     plt.plot([], label="Pass #1", color=mapcolors[0])
     for i in range(max([len(allyearsinHZ[nb]) for nb in range(numb)])):
         plt.plot([], label="Pass #"+str(2+i), color=mapcolors[1:][(i-1)%(len(mapcolors)-1)])
-    plt.legend()
+    plt.xlim([distances[0]*0.75, distances[-1]*1.05])
+    legend1 = plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
     plt.title('Sum of TIHZ ('+solarmodel+')')
+    
+    
+    # add vlines at orbital distances of the planets
+    planets = ['Jupiter','Saturn','Uranus','Neptune', 'Pluto'] # name of the bodies
+    planetstyle = ['-','--', '-.', ':', (0, (1, 10))]
+    planetcolors = ['xkcd:light brown','xkcd:peach','xkcd:light blue','xkcd:bright blue', 'xkcd:maroon'] # color of each body for plotting
+    planetdistances = [5.2, 9.54, 19.2, 30.0, 39.5] # AU, https://www.jpl.nasa.gov/edu/pdfs/ssbeads_answerkey.pdf
+    nump = len(planets)
+    
+    linelist = []
+    for nm in range(nump):
+        line = plt.axvline(planetdistances[nm], linestyle=planetstyle[nm], color='k',linewidth=1, label=planets[nm])
+        linelist += [line]
+    plt.legend(handles=linelist, bbox_to_anchor=(1.005, 0), loc='lower left')
+    plt.gca().add_artist(legend1)    
+    
+    
 
 # plt.figure()
 # for nb in range(numb):
@@ -416,6 +435,4 @@ if len(distances)>10:
 # plt.bar(0, height=0, width=0, facecolor='grey', label=solarmodel)
 # plt.bar(0, height = 0, width=0, fill = False, hatch='//', label ='PARSEC')
 # plt.legend()
-
-# plt.savefig('Plots/'+boundaries+'-dartmouth+parsec-TIHZ.pdf')
 
