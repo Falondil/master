@@ -77,12 +77,11 @@ elif fileselect == '2':
             track1.append(rowlist)
             
     track1[0].pop(0)
-        
-    n1 = len(track1)
     
-    age1 = [float(track1[i][0]) for i in range(1,n1)]
-    logL1 = [float(track1[i][3]) for i in range(1,n1)]
-    logTe1 = [float(track1[i][1]) for i in range(1,n1)]
+    age1 = [float(x[0]) for x in track1[1:]]
+    logL1 = [float(x[3]) for x in track1[1:]]
+    logTe1 = [float(x[1]) for x in track1[1:]]
+    n1 = len(age1)
     
     track2 = []
     
@@ -91,13 +90,12 @@ elif fileselect == '2':
             rowlist = line.split()
             track2.append(rowlist)
     
-    n2 = len(track2)
+    age2 = [float(x[0]) for x in track2[1:]]
+    logL2 = [float(x[3]) for x in track2[1:]]
+    logTe2 = [float(x[1]) for x in track2[1:]]
+    n2 = len(age2)
     
-    age2 = [float(track2[i][0]) for i in range(1,n2)]
-    logL2 = [float(track2[i][3]) for i in range(1,n2)]
-    logTe2 = [float(track2[i][1]) for i in range(1,n2)]
-    
-    n = n1+n2-1
+    n = n1+n2+1
     
     age = age1+[a+age1[-1] for a in age2]
     logL = logL1+logL2
@@ -116,7 +114,8 @@ elif fileselect=='3':
     logTe = [float(track[i][11]) for i in range(12,1420)]
 
     n = len(age)+1
-    
+    n1 = 605 # determined visually from plt.semilogy(age[580:6XX], L[580:6XX], '.') by changing XX down until the last point is the tip
+
 # Solarcalibrated    
 else:
     track = []
@@ -131,6 +130,7 @@ else:
     logL = [float(track[i][4]) for i in range(5,n)]
     logTe = [float(track[i][5]) for i in range(5,n)]
     n = len(age)
+    n1 = n
     
 #----------------------------------PART 2--------------------------------------
 # general calculations (for any body)
@@ -257,8 +257,6 @@ plt.legend()
 # HZ boundaries for plotting
 inSlim = [funclist[0](T) for T in Tlist] # inner HZ boundary limit
 outSlim = [funclist[1](T) for T in Tlist] # outer HZ boundary limit
-rvSlim = [RecentVenus(T) for T in Tlist] # optimistic inner HZ
-emSlim = [EarlyMars(T) for T in Tlist] # optimistic outer HZ
 
 # Find the S limit for a given Te from the stellar track
 leftlimit = [funclist[0](T) for T in Te[cind:]]
@@ -373,16 +371,17 @@ plt.title('Waterloss timespans ('+solarmodel+')')
 
 # Base case HZ plot
 plt.figure()
-plt.gca().set_aspect(aspect = 1.05/5780) # arbitrary
+Smax = 2 if boundword == 'Optimistic' else 1.25
+plt.gca().set_aspect(aspect = (Smax-0.2)/5780) # arbitrary
 plt.gca().yaxis.set_ticks_position('both')
 plt.plot(inSlim, Tlist, color='r')
 plt.plot(outSlim, Tlist, color='b')
-plt.axis([1.25, 0.2, 2600, 7200])
+plt.axis([Smax, 0.2, 2600, 7200])
 plt.title('First pass through '+boundword+' HZ ('+solarmodel+')')
 plt.xlabel('Instellation [S/S0]')
 plt.ylabel('Effective temperature [K]')
 for nb in range(numb):
-    plt.plot(Seff[nb][cind:topi[nb]],Te[cind:topi[nb]],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb])
+    plt.plot(Seff[nb][cind:n1],Te[cind:n1],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb]) # n1 is index for last point before helium flash
     plt.plot(Seff[nb][cind],Te[cind],'o',color='k')
     plt.legend()
 
