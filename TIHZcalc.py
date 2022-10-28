@@ -13,10 +13,8 @@ import numpy as np
 
 fileselect = input('Enter 1, 2, 3 for PARSEC, Dartmouth or MIST solar evolution tracks: ')
 if fileselect == '1':
-    filename1 = "tracks/Z0.014Y0.273O_IN0.00OUTA1.74_F7_M1.00.tab" 
-    filename2 = "tracks/Z0.014Y0.273O_IN0.00OUTA1.74_F7_M1.00.TAB.HB"
-    # filename1 = "tracks/Z0.017Y0.279O_IN0.00OUTA1.74_F7_M1.00.TAB"
-    # filename2 = "tracks/Z0.017Y0.279O_IN0.00OUTA1.74_F7_M1.00.TAB.HB"
+    filename1 = "tracks/Z0.017Y0.279O_IN0.00OUTA1.74_F7_M1.00.TAB"
+    filename2 = "tracks/Z0.017Y0.279O_IN0.00OUTA1.74_F7_M1.00.TAB.HB"
     solarmodel = 'PARSEC'
 elif fileselect == '2':
     filename1 = "tracks/alpha00_M100_RGB.txt"
@@ -43,10 +41,9 @@ if fileselect == '1':
             
     track1.pop(-1) # removes end row 
 
-    n1 = len(track1)
-    age1 = [float(track1[i][2]) for i in range(5,n1)]
-    logL1 = [float(track1[i][4]) for i in range(5,n1)]
-    logTe1 = [float(track1[i][5]) for i in range(5,n1)]
+    age1 = [float(x[2]) for x in track1[5:]]
+    logL1 = [float(x[4]) for x in track1[5:]]
+    logTe1 = [float(x[5]) for x in track1[5:]]
     n1 = len(age1)
 
     track2 = []
@@ -58,10 +55,9 @@ if fileselect == '1':
             
     track2.pop(-1) # removes end row 
             
-    n2 = len(track2)
-    age2 = [float(track2[i][2]) for i in range(5,n2)]
-    logL2 = [float(track2[i][4]) for i in range(5,n2)]
-    logTe2 = [float(track2[i][5]) for i in range(5,n2)]
+    age2 = [float(x[2]) for x in track2[5:]]
+    logL2 = [float(x[4]) for x in track2[5:]]
+    logTe2 = [float(x[5]) for x in track2[5:]]
     n2 = len(age2)
 
     n = n1+n2+1
@@ -70,6 +66,7 @@ if fileselect == '1':
     logL = logL1+logL2
     logTe = logTe1+logTe2
         
+    
 # Dartmouth has split RGB and HB-AGB tracks to concatenate
 elif fileselect == '2':
     track1 = []
@@ -119,6 +116,8 @@ elif fileselect=='3':
     logTe = [float(track[i][11]) for i in range(12,1420)]
 
     n = len(age)+1
+    
+# Solarcalibrated    
 else:
     track = []
     with open(filename) as f:
@@ -168,11 +167,11 @@ numb = len(bodies)
 barwidth = 0.3
 
 # Uncomment these lines to get sum of TIHZ graph
-startdistance = 5
-distances = [startdistance+barwidth*r for r in range(int((39.5+barwidth-startdistance)/barwidth))] # list from startdistance to roughly 39.5 AU 
-bodies = [str(d) for d in distances]
-numb = len(distances)
-colors = ['C'+str(i) for i in range(numb)]
+# startdistance = 5
+# distances = [startdistance+barwidth*r for r in range(int((39.5+barwidth-startdistance)/barwidth))] # list from startdistance to roughly 39.5 AU 
+# bodies = [str(d) for d in distances]
+# numb = len(distances)
+# colors = ['C'+str(i) for i in range(numb)]
 
 # calculations for each body
 Seff = [[x/d**2 for x in L] for d in distances] # S0
@@ -304,10 +303,10 @@ runawaystarts = [[i for i in runawayind[nb] if i-1 not in runawayind[nb]] for nb
 runawaystops = [[i for i in runawayind[nb] if i+1 not in runawayind[nb]] for nb in range(numb)]
 waterlosstimes = [[age[cind+runawaystops[nb][i]]-age[cind+runawaystarts[nb][i]] for i in range(len(runawaystops[nb]))] for nb in range(numb)]
 
-# plot HR esque diagram
+# plot HR diagram
 plt.figure()
-plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', mfc = 'gray', markeredgecolor='k', label=boundaries)
-plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', color = 'g')
+plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', mfc = 'gray', markeredgecolor='k')
+plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', color = 'g', label=boundword+' HZ')
 plt.xlabel('Effective temperature [K]')
 plt.ylabel('Luminosity [L_sun]')
 plt.title('HR diagram ('+solarmodel+')')
