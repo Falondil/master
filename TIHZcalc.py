@@ -147,7 +147,7 @@ plt.semilogy(age[cind:],L[cind:],'-', color = 'y')
 plt.gca().yaxis.set_ticks_position('both')
 plt.title('Change in luminosity ('+solarmodel+')')
 plt.xlabel('Age of the Sun [yr]')
-plt.ylabel('Luminosity [L_sun]')    
+plt.ylabel('Luminosity '+r'$[L/L_\bigodot]$')    
 
 # plot Te w.r.t. stellar age
 plt.figure()
@@ -331,7 +331,7 @@ plt.figure()
 plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', mfc = 'gray', markeredgecolor='k')
 plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', color = 'g', label=boundword+' HZ')
 plt.xlabel('Effective temperature [K]')
-plt.ylabel('Luminosity [L_sun]')
+plt.ylabel('Luminosity '+r'$[L/L_\bigodot]$')
 plt.title('HR diagram ('+solarmodel+')')
 plt.gca().invert_xaxis()
 plt.xlim([7200, 2600])
@@ -361,8 +361,7 @@ allyearsinHZ = [[stopagepolyval[nb][i] - startagepolyval[nb][i] for i in range(l
 
 plt.figure()
 for nb in range(numb):
-    plt.bar([nb + 0.1666*i for i in range(len(allyearsinHZ[nb]))], allyearsinHZ[nb], width=0.1666, color=colors[nb], label=bodies[nb])
-    plt.legend()
+    plt.bar([nb + 0.1666*i for i in range(len(allyearsinHZ[nb]))], allyearsinHZ[nb], width=0.1666, color=colors[nb])
 plt.xticks(range(numb), bodies)
 plt.ylabel('timespan [years]')
 plt.title('Timespans inside the Habitable Zone ('+solarmodel+')')
@@ -388,9 +387,6 @@ for nb in range(numb):
 plt.xticks(range(numb), bodies)
 wax2 = wax.secondary_yaxis('right', functions=(lambda x: x/EarthOceanLossTime, lambda x: x*EarthOceanLossTime))
 wax2.set_ylabel('Earth Ocean(s) lost')
-# plt.axhline(2e7, linestyle = '--', color='C0', label='1 Earth Ocean lost')
-# plt.axhline(4e7, linestyle = '-', color='C0', label='2 Earth Oceans lost')
-plt.legend()
 
 plt.ylabel('timespan [years]')
 plt.title('Waterloss timespans ('+solarmodel+')')
@@ -467,4 +463,4 @@ if len(distances)>10:
 
 
 # How to save figures
-# plt.savefig('Plots/blablabla.pdf')
+# plt.savefig('Plots/NAMEHERE.png', bbox_inches = 'tight')
