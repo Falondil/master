@@ -163,17 +163,17 @@ maxS = 1.5 # S0. Arbitrary upper cut-off value for plotting purposes
 # parameters for each body considered
 bodies = ['Jupiter','Saturn','Uranus','Neptune', 'Pluto'] # name of the bodies
 colors = ['xkcd:light brown','xkcd:peach','xkcd:light blue','xkcd:bright blue', 'xkcd:maroon'] # color of each body for plotting
-distances = [5.2, 9.54, 19.2, 30.0, 39.5] # AU, https://www.jpl.nasa.gov/edu/pdfs/ssbeads_answerkey.pdf
+distances = [5.2, 9.57, 19.17, 30.18, 39.48] # AU, https://nssdc.gsfc.nasa.gov/planetary/factsheet/planet_table_ratio.html
 numb = len(bodies)
 
 barwidth = 0.3
 
 # Uncomment these lines to get sum of TIHZ graph
-# startdistance = 5
-# distances = [startdistance+barwidth*r for r in range(int((39.5+barwidth-startdistance)/barwidth))] # list from startdistance to roughly 39.5 AU 
-# bodies = [str(d) for d in distances]
-# numb = len(distances)
-# colors = ['C'+str(i) for i in range(numb)]
+startdistance = 5
+distances = [startdistance+barwidth*r for r in range(int((39.5+barwidth-startdistance)/barwidth))] # list from startdistance to roughly 39.5 AU 
+bodies = [str(d) for d in distances]
+numb = len(distances)
+colors = ['C'+str(i) for i in range(numb)]
 
 # calculations for each body
 Seff = [[x/d**2 for x in L] for d in distances] # S0
@@ -430,23 +430,27 @@ if len(distances)>10:
     plt.plot([], label="Pass #1", color=mapcolors[0])
     for i in range(max([len(allyearsinHZ[nb]) for nb in range(numb)])):
         plt.plot([], label="Pass #"+str(2+i), color=mapcolors[1:][(i-1)%(len(mapcolors)-1)])
-    plt.xlim([distances[0]*0.75, distances[-1]*1.05])
-    legend1 = plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
+    plt.xlim([distances[0]*0.75, distances[-1]*1.1])
+    plt.ylim([0, 4e8])
+    # legend1 = plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
     plt.title('Sum of '+boundword+' TIHZ ('+solarmodel+')')
     
     # add vlines at orbital distances of the planets
     planets = ['Jupiter','Saturn','Uranus','Neptune', 'Pluto'] # name of the bodies
     planetstyle = ['-','--', '-.', ':', (0, (1, 10))]
     planetcolors = ['xkcd:light brown','xkcd:peach','xkcd:light blue','xkcd:bright blue', 'xkcd:maroon'] # color of each body for plotting
-    planetdistances = [5.2, 9.54, 19.2, 30.0, 39.5] # AU, https://www.jpl.nasa.gov/edu/pdfs/ssbeads_answerkey.pdf
+    planetdistances = [5.2, 9.57, 19.17, 30.18, 39.48] # AU
     nump = len(planets)
     
     linelist = []
     for nm in range(nump):
         line = plt.axvline(planetdistances[nm], linestyle=planetstyle[nm], color='k',linewidth=1, label=planets[nm])
         linelist += [line]
-    plt.legend(handles=linelist, bbox_to_anchor=(1.005, 0), loc='lower left')
-    plt.gca().add_artist(legend1)    
+    # plt.legend(handles=linelist, bbox_to_anchor=(1.005, 0), loc='lower left')
+    # plt.gca().add_artist(legend1)    
+    
+    for nm in range(nump):
+        plt.text(planetdistances[nm]+0.2, 3.5e8, planets[nm])
     
 
 # plt.figure()
