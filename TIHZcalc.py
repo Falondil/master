@@ -151,7 +151,7 @@ plt.ylabel('Luminosity '+r'$[L/L_\bigodot]$')
 
 # plot Te w.r.t. stellar age
 plt.figure()
-plt.plot(age[cind:], Te[cind:], linestyle='--',marker='.', color = 'orange')
+plt.plot(age[cind:], Te[cind:], linestyle='-', color = 'orange')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Effective temperature [K]')
 plt.title('Change in temperature ('+solarmodel+')')
@@ -169,25 +169,26 @@ numb = len(bodies)
 barwidth = 0.3
 
 # Uncomment these lines to get sum of TIHZ graph
-startdistance = 5
-distances = [startdistance+barwidth*r for r in range(int((39.5+barwidth-startdistance)/barwidth))] # list from startdistance to roughly 39.5 AU 
-bodies = [str(d) for d in distances]
-numb = len(distances)
-colors = ['C'+str(i) for i in range(numb)]
+# startdistance = 5
+# stopdistance = 44.5
+# distances = [startdistance+barwidth*r for r in range(int((stopdistance+barwidth-startdistance)/barwidth))] # list from startdistance to roughly 39.5 AU 
+# bodies = [str(d) for d in distances]
+# numb = len(distances)
+# colors = ['C'+str(i) for i in range(numb)]
 
 # calculations for each body
 Seff = [[x/d**2 for x in L] for d in distances] # S0
 Scut = [Seff[nb][cind:] for nb in range(numb)] # S0, effective instellations after current time
 
-topval = []
-topi = []
-for nb in range(numb):
-    try:
-        topval += [list(filter(lambda i: i>maxS, Scut[nb]))[0]] # first value exceeding maxS
-        topi += [Scut[nb].index(topval[nb])+cind] # index of that value
-    except IndexError:
-        topval += [max(Scut[nb])] # max value instead if it never exceeds maxS
-        topi += [len(Seff[nb])] # entire length should be plotted
+# topval = []
+# topi = []
+# for nb in range(numb):
+#     try:
+#         topval += [list(filter(lambda i: i>maxS, Scut[nb]))[0]] # first value exceeding maxS
+#         topi += [Scut[nb].index(topval[nb])+cind] # index of that value
+#     except IndexError:
+#         topval += [max(Scut[nb])] # max value instead if it never exceeds maxS
+#         topi += [len(Seff[nb])] # entire length should be plotted
 
 #----------------------------------PART 4a-------------------------------------
 # Habitable Zone and time within
@@ -236,15 +237,15 @@ funclist = [RecentVenus, EarlyMars]
 boundaries = 'RVEM'
 boundword = 'Optimistic'
 
-# Plotting instellation at each body w.r.t. stellar age
-plt.figure()
-for nb in range(numb):
-    plt.semilogy(age[cind:topi[nb]],Seff[nb][cind:topi[nb]],'-',color=colors[nb],label=bodies[nb])
-plt.gca().yaxis.set_ticks_position('both')
-plt.title('Change in instellation ('+solarmodel+')')
-plt.xlabel('Age of the Sun [yr]')
-plt.ylabel('Instellation received by solar system body '+r'$[S/S_\bigoplus]$')
-plt.legend()
+# # Plotting instellation at each body w.r.t. stellar age. Remove this and topi block
+# plt.figure()
+# for nb in range(numb):
+#     plt.semilogy(age[cind:topi[nb]],Seff[nb][cind:topi[nb]],'-',color=colors[nb],label=bodies[nb])
+# plt.gca().yaxis.set_ticks_position('both')
+# plt.title('Change in instellation ('+solarmodel+')')
+# plt.xlabel('Age of the Sun [yr]')
+# plt.ylabel('Instellation '+r'$[S/S_\bigoplus]$')
+# plt.legend()
 
 plt.figure()
 for nb in range(numb):
@@ -255,7 +256,7 @@ plt.semilogy(age[cind:], [funclist[0](T) for T in Te[cind:]], color='r', linewid
 plt.semilogy(age[cind:], [funclist[1](T) for T in Te[cind:]], color='b', linewidth=1.5, linestyle='--')
 plt.title('Change in instellation ('+solarmodel+')')
 plt.xlabel('Age of the Sun [yr]')
-plt.ylabel('Instellation received by solar system body '+r'$[S/S_\bigoplus]$')
+plt.ylabel('Instellation '+r'$[S/S_\bigoplus]$')
 plt.legend()
 
 # HZ boundaries for plotting
@@ -288,7 +289,7 @@ leftlimit = [funclist[0](T) for T in Te[cind:]]
 rightlimit = [funclist[1](T) for T in Te[cind:]]
 # find indices closest to inner and outer HZ boundary for each body 
 leftdiff = [[Scut[nb][i]-leftlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)] # differences between current S and S at the boundary (same Te)
-leftindex = [leftdiff[nb].index(list(filter(lambda i: i>0, leftdiff[nb]))[0])+cind for nb in range(numb)] # first element OUTSIDE IHZ (i.e. first point with too much instellation)
+leftindex = [[n-2] if max(leftdiff[nb])<0 else leftdiff[nb].index(list(filter(lambda i: i>0, leftdiff[nb]))[0])+cind for nb in range(numb)] # first element OUTSIDE IHZ (i.e. first point with too much instellation. Ensures that last point receives too much instellation as a failsafe)
 rightdiff = [[Scut[nb][i]-rightlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)]
 rightindex = [cind if Scut[nb][0]>rightlimit[0] else rightdiff[nb].index(list(filter(lambda i: i>0, rightdiff[nb]))[0])+cind-1 for nb in range(numb)] # last point outside OHZ
 # consider case where the body at no point is outside the outer HZ boundary
@@ -298,7 +299,7 @@ inIHZ = [[leftlimit[i]>Scut[nb][i] for i in range(len(Scut[nb]))] for nb in rang
 inOHZ = [[Scut[nb][i]>rightlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)]
 booleanHZ = [[inIHZ[nb][i] and inOHZ[nb][i] for i in range(len(Scut[nb]))] for nb in range(numb)]
 for nb in range(numb):
-    booleanHZ[nb][-1]=False # Stupid way to ensure that the habitablity time calculations work even if you have a track too short to plot all the timespans inside HZ
+    booleanHZ[nb][-1]=False # Stupid way to ensure that the habitablity time calculations work even if you have a track too short to plot all the time spans inside HZ
     booleanHZ[nb][0]=False # same as above, but for start
 # for nb in range(numb): # plotting is for working purposes
     # plt.figure()
@@ -328,15 +329,14 @@ waterlosstimes = [[age[cind+runawaystops[nb][i]]-age[cind+runawaystarts[nb][i]] 
 
 # plot HR diagram
 plt.figure()
-plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', mfc = 'gray', markeredgecolor='k')
-plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', color = 'g', label=boundword+' HZ')
+plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', mfc = 'gray', markeredgecolor='k', markersize=2)
+plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', markersize=2, color = 'g', label=boundword+' HZ')
 plt.xlabel('Effective temperature [K]')
 plt.ylabel('Luminosity '+r'$[L/L_\bigodot]$')
 plt.title('HR diagram ('+solarmodel+')')
 plt.gca().invert_xaxis()
 plt.xlim([7200, 2600])
 plt.ylim([0.9*10**0, 10**4])
-plt.legend()
 
 # preliminary timespan calculation
 approxyearsinHZ = [[age[cind+x[1]]-age[cind+x[0]] for x in trueranges[nb]] for nb in range(numb)]
@@ -354,7 +354,7 @@ startpolys = [[list(np.polyfit(Sstarts[nb][i], agestarts[nb][i], 1)) for i in ra
 stoppolys = [[list(np.polyfit(Sstops[nb][i], agestops[nb][i], 1)) for i in range(len(Sstops[nb]))] for nb in range(numb)] # list of polynomial coefficients for age(S) for each time leaving HZ
 startagepolyval = [[np.polyval(startpolys[nb][i], funclist[not inOHZ[nb][truestarts[nb][i]-1]](meanTestarts[nb][i])) if 2600<meanTestarts[nb][i]<7200 else sum(agestarts[nb][i])/2 for i in range(len(truestarts[nb]))] for nb in range(numb)] # interpolated ages of entering HZ
 stopagepolyval = [[np.polyval(stoppolys[nb][i], funclist[not inOHZ[nb][truestops[nb][i]+1]](meanTestops[nb][i])) if 2600<meanTestops[nb][i]<7200 else sum(agestops[nb][i])/2 for i in range(len(truestops[nb]))] for nb in range(numb)] # interpolated ages of leaving HZ
-# removing if else part of list comprehension utilizes polynomial fits where they are no longer applicable. 0.2 had negative times late when Te >~= 10000. 
+# removing if else part of list comprehension utilizes polynomial fits where they are no longer applicable.
 middleage = [[(stopagepolyval[nb][i]+startagepolyval[nb][i])/2 for i, x in enumerate(stopagepolyval[nb])] for nb in range(numb)]
 
 allyearsinHZ = [[stopagepolyval[nb][i] - startagepolyval[nb][i] for i in range(len(stopagepolyval[nb]))] for nb in range(numb)]
@@ -364,7 +364,7 @@ for nb in range(numb):
     plt.bar([nb + 0.1666*i for i in range(len(allyearsinHZ[nb]))], allyearsinHZ[nb], width=0.1666, color=colors[nb])
 plt.xticks(range(numb), bodies)
 plt.ylabel('timespan [years]')
-plt.title('Timespans inside the Habitable Zone ('+solarmodel+')')
+plt.title(boundword+' TIHZ ('+solarmodel+')')
 
 for nb in range(numb):
     plt.figure()
@@ -373,7 +373,7 @@ for nb in range(numb):
     plt.gca().set_xlim(right=age[-1])
     plt.xlabel('[years]')
     plt.ylabel('timespan [years]')
-    plt.title('Timespans inside the Habitable Zone ('+solarmodel+')')
+    plt.title(boundword+' TIHZ ('+solarmodel+')')
     plt.legend()
 
 strYears = [['0' if x == 0 else "{:.1e}".format(x) for x in allyearsinHZ[nb]] for nb in range(numb)] # list of strings, scientific notation 1 decimal
@@ -389,24 +389,27 @@ wax2 = wax.secondary_yaxis('right', functions=(lambda x: x/EarthOceanLossTime, l
 wax2.set_ylabel('Earth Ocean(s) lost')
 
 plt.ylabel('timespan [years]')
-plt.title('Waterloss timespans ('+solarmodel+')')
+plt.title('Water-loss time spans ('+solarmodel+')')
 
 # #----------------------------------PART 4b-------------------------------------
 # Habitable Zone plotting
 
 # Base case HZ plot
 plt.figure()
-Smax = 2 if boundword == 'Optimistic' else 1.25
+Smax = 2
 plt.gca().set_aspect(aspect = (Smax-0.2)/5780) # arbitrary
 plt.gca().yaxis.set_ticks_position('both')
-plt.plot(inSlim, Tlist, color='r')
-plt.plot(outSlim, Tlist, color='b')
-plt.axis([Smax, 0.2, 2600, 7200])
-plt.title('First pass through '+boundword+' HZ ('+solarmodel+')')
+plt.plot(rvSlim, Tlist, color='r', linestyle=':')
+plt.plot(runawaySlim, Tlist, color='r', linestyle='--')
+plt.plot(moistSlim, Tlist, color='r')
+plt.plot(maxGHSlim, Tlist, color='b')
+plt.plot(emSlim, Tlist, color='b', linestyle=':')
+plt.axis([2, 0.2, 2600, 7200])
+plt.title('First pass through HZ ('+solarmodel+')')
 plt.xlabel('Instellation '+r'$[S/S_\bigoplus]$')
 plt.ylabel('Effective temperature [K]')
 for nb in range(numb):
-    plt.plot(Seff[nb][cind:n1],Te[cind:n1],linestyle='-',linewidth=1,marker='.',color=colors[nb],label=bodies[nb]) # n1 is index for last point before helium flash
+    plt.plot(Seff[nb][cind:n1],Te[cind:n1],linestyle='-',linewidth=2,color=colors[nb],label=bodies[nb]) # n1 is index for last point before helium flash
     plt.plot(Seff[nb][cind],Te[cind],'o',color='k')
     plt.legend()
 
@@ -430,7 +433,7 @@ if len(distances)>10:
     plt.plot([], label="Pass #1", color=mapcolors[0])
     for i in range(max([len(allyearsinHZ[nb]) for nb in range(numb)])):
         plt.plot([], label="Pass #"+str(2+i), color=mapcolors[1:][(i-1)%(len(mapcolors)-1)])
-    plt.xlim([distances[0]*0.75, distances[-1]*1.1])
+    plt.xlim([distances[0]*0.75, distances[-1]*1.02])
     plt.ylim([0, 4e8])
     # legend1 = plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
     plt.title('Sum of '+boundword+' TIHZ ('+solarmodel+')')
@@ -459,7 +462,7 @@ if len(distances)>10:
 #     plt.bar([nb + 0.25*i for i in range(len(allyearsinHZPARSEC[nb]))], allyearsinHZPARSEC[nb], width=0.25, fill = False, hatch='//')
 # plt.xticks(range(numb), bodies)
 # plt.ylabel('timespan [years]')
-# plt.title('Timespans inside the '+boundword+' Habitable Zone')
+# plt.title('Time spans inside the '+boundword+' Habitable Zone')
 # plt.bar(0, height=0, width=0, facecolor='grey', label=solarmodel)
 # plt.bar(0, height = 0, width=0, fill = False, hatch='//', label ='PARSEC')
 # plt.legend()

@@ -6,6 +6,7 @@ Created on Thu Oct 27 13:38:57 2022
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
 #------------------------------------------------------------------------------
 
 filename1 = "tracks/Z0.017Y0.279O_IN0.00OUTA1.74_F7_M1.00.TAB"
@@ -51,6 +52,8 @@ PHS = PHS1+PHS2
 L = [10**x for x in logL]
 Te = [10**x for x in logTe]
 
+cind = min(range(n-1), key=lambda i: abs(age[i]-1e8))
+
 #------------------------------------------------------------------------------
 
 comparisonfiles = ["tracks/SolarCalibratedRGB.tab",
@@ -77,7 +80,7 @@ comparisonwords = ['Solar calibration',
                   'Z=0.004']
 
 # list of index for tracks you want to compare. 
-choices = [5, 9]
+choices = [5,6,7,8,9]
 
 comparisonfiles = [comparisonfiles[i] for i in sorted(choices)]
 comparisonwords = [comparisonwords[i] for i in sorted(choices)]
@@ -133,15 +136,19 @@ for i in range(len(comparisonfiles)):
         ns.append(len(ages[-1]))
         
 #------------------------------------------------------------------------------
-        
-plt.figure()
-plt.semilogy(age, L, linewidth = 0, marker='.', markersize=1, color='k', label = solarmodel)
+
+cinds = []
 for i in range(len(comparisonfiles)):
-    plt.semilogy(ages[i], Ls[i], linestyle=linestyles[0], label=comparisonwords[i])
+    cinds.append(min(range(ns[i]-1), key=lambda j: abs(ages[i][j]-1e8)))
+ 
+plt.figure()
+plt.semilogy(age[cind:], L[cind:], linestyle='-', color='k', label = solarmodel)
+for i in range(len(comparisonfiles)):
+    plt.semilogy(ages[i][cinds[i]:], Ls[i][cinds[i]:], linestyle=linestyles[0], label=comparisonwords[i])
 plt.xlabel('Age of the star [yr]')
 plt.ylabel('Luminosity '+r'$[L/L_\bigodot]$')
 plt.title('Change in luminosity')
-plt.legend(bbox_to_anchor=(1.005, 0), loc='lower left')
+plt.legend()
 
 plt.figure()
 plt.plot(age, PHS, linestyle=linestyles[0], color='k', label = solarmodel)
@@ -157,27 +164,70 @@ RGBtime = []
 for i in range(len(comparisonfiles)):
     MSstopindex = PHSs[i].index(3+min([abs(x-3) for x in PHSs[i]]))
     MStime.append(ages[i][MSstopindex])
-    RGBstopindex = PHSs[i].index(5+min([abs(x-5) for x in PHSs[i]]))
-    RGBtime.append(ages[i][RGBstopindex])
-RGBduration = [RGBtime[i]-MStime[i] for i in range(len(comparisonfiles))]
-                
+    if max(PHSs[i])>4:
+        RGBstopindex = PHSs[i].index(5+min([abs(x-5) for x in PHSs[i]]))
+        RGBtime.append(ages[i][RGBstopindex])
+    else:
+        RGBtime.append(ages[i][-1])
+RGBduration = [RGBtime[i]-MStime[i] for i in range(len(comparisonfiles))]    
+scaledRGBduration=[RGBduration[i]/ages[i][-1] for i in range(len(comparisonfiles))]  
+endtimes = [x[-1] for x in ages]
+
+# Luminosity evolution from RGB start to end of track
+plt.figure()
+plt.semilogy(age[cind:], L[cind:], linestyle='-', color='k', label = solarmodel)
+for i in range(len(comparisonfiles)):
+    plt.semilogy(ages[i][cinds[i]:], Ls[i][cinds[i]:], linestyle=linestyles[0], label=comparisonwords[i])
+plt.xlabel('Age of the star [yr]')
+plt.ylabel('Luminosity '+r'$[L/L_\bigodot]$')
+plt.gca().set_xlim(left=min(age[1656], min(MStime)), right=max(age[-1], max([x[-1] for x in ages])))
+plt.title('Change in luminosity')
+plt.legend()
+
+# Luminosity evolution divided by total track age
+scaleage = [x/age[-1] for x in age[cind:]]
+scaleages = []
+for i in range(len(comparisonfiles)):
+    scaleages.append([ages[i][j]/ages[i][-1] for j in range(cinds[i], len(ages[i]))])
+
+plt.figure()
+plt.semilogy(scaleage, L[cind:], linestyle='-', color='k', label = solarmodel)
+for i in range(len(comparisonfiles)):
+    plt.semilogy(scaleages[i], Ls[i][cinds[i]:], linestyle=linestyles[0], label=comparisonwords[i])
+plt.xlabel('Age of the star/Track duration')
+plt.ylabel('Luminosity '+r'$[L/L_\bigodot]$')
+plt.title('Superimposed change in luminosity')
+plt.gca().set_xlim(left=age[1656]/age[-1], right=1.02)
+plt.legend()
+
+# Linear polynomial between RGB+HB duration and total track duration
+polynomial=np.polyfit(RGBduration, endtimes, 1)
+plt.figure()
+plt.plot(RGBduration, endtimes, '.', color='k') 
+plt.plot(RGBduration, np.polyval(polynomial, RGBduration), color='k')
+plt.xlabel('Duration of the RGB+HB [yr]')
+plt.ylabel('Length of the track [yr]')
+plt.title('Linear relation of RGB+HB duration')
+
 # HR diagram
 plt.figure()
-plt.loglog(Te, L, linewidth = 0, marker='.', markersize=1, color='k', label = solarmodel)
+plt.loglog(Te[cind:], L[cind:], linewidth=0, marker='.', markersize=1, color='k')
 for i in range(len(comparisonfiles)):
-    plt.loglog(Tes[i], Ls[i], linestyle=linestyles[0], label = comparisonwords[i])
-    plt.loglog(Tes[i][0], Ls[i][0], marker='o', color='k', markerfacecolor='None') # start of track
-    plt.loglog(Tes[i][-1], Ls[i][-1], marker='x', color='k') # end of track
+    plt.loglog(Tes[i][cinds[i]:], Ls[i][cinds[i]:], linewidth=0, marker='.', markersize=1)
+    # plt.loglog(Tes[i][cinds[i]], Ls[i][cinds[i]], marker='o', color='k', markerfacecolor='None') # start of track
+    # plt.loglog(Tes[i][-1], Ls[i][-1], marker='x', color='k') # end of track
 plt.xlabel('Effective temperature [K]')
 plt.ylabel('Luminosity [L_sun]')
 plt.title('HR diagram comparison')
-plt.vlines(x=7200, ymin=1, ymax=1e3, color='k', linewidth=1)
-plt.vlines(2600, ymin=1, ymax=1e3, color='k', linewidth=1)
-plt.hlines(1, xmin=2600, xmax=7200, color='k', linewidth=1)
-plt.hlines(1e3, xmin=2600, xmax=7200, color='k', linewidth=1)
 plt.gca().invert_xaxis()
-plt.legend(bbox_to_anchor=(1.005, 0), loc='lower left')
+plt.legend()
+# plt.legend(bbox_to_anchor=(1.005, 0), loc='lower left')
 
+# creates a box around the possible HZ for outer moons
+# plt.vlines(x=7200, ymin=1, ymax=1e3, color='k', linewidth=1)
+# plt.vlines(2600, ymin=1, ymax=1e3, color='k', linewidth=1)
+# plt.hlines(1, xmin=2600, xmax=7200, color='k', linewidth=1)
+# plt.hlines(1e3, xmin=2600, xmax=7200, color='k', linewidth=1)
 
             
                             
