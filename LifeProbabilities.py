@@ -5,6 +5,7 @@ Created on Mon Dec  5 09:56:18 2022
 @author: Vviik
 """
 import numpy as np
+import matplotlib.pyplot as plt
 
 pi = np.pi
 
@@ -31,6 +32,7 @@ diamTNOs = [2376.6, 2326, 1609.7, 1430, 1230, 1212]
 areaTNOs = sum([pi*d**2 for d in diamTNOs])
 
 arealist = [areaJupitersmoons, areaSaturnsmoons, areaNeptunesmoons, areaUranusmoons, areaTNOs]
+# arealist = arealist[:-1] # use this if you want to exclude TNOs
 
 # TIHZ from PARSEC w/ optmisitic HZ. 
 RGBTIHZ = [265761502.50967598, 82975073.10663033, 27421153.146274567, 13882409.799789429, 9819829.844875336]
@@ -41,16 +43,50 @@ postRGBtimeareas = [postRGBTIHZ[i]*arealist[i] for i in range(len(arealist))]
 
 # 1 Gyr life occurance calc. Assumes life occurs on average every 1 Gyr on an Earth sized habitable body
 r1 = 1e-9 # yr^-1
-r2 = 2e-9 # yr^-1, if life forms on average every 0.5 Myr
-r05 = 0.5e-9 # yr^-1, if life forms on average every 2 Gyr
 
 # probability that life occurs at least once on any of the outer moons. Equation (8).
-PRGB1 = 1-np.exp(-r1/Earea*sum(RGBtimeareas))
-PpostRGB1 = 1-np.exp(-r1/Earea*sum(postRGBtimeareas))
-Ptot1 = 1-np.exp(-r1/Earea*sum(RGBtimeareas+postRGBtimeareas))
+PRGB = 1-np.exp(-r1/Earea*sum(RGBtimeareas))
+PpostRGB = 1-np.exp(-r1/Earea*sum(postRGBtimeareas))
+Ptot = 1-np.exp(-r1/Earea*sum(RGBtimeareas+postRGBtimeareas))
 
-PRGB2 = 1-np.exp(-r2/Earea*sum(RGBtimeareas))
-PpostRGB2 = 1-np.exp(-r2/Earea*sum(postRGBtimeareas))
-Ptot2 = 1-np.exp(-r2/Earea*sum(RGBtimeareas+postRGBtimeareas))
+# plotting for different assumed rates
+rlist=[x*1e-10 for x in range(1, 10000)] # [life forms every 10 Gyr, life forms every 1 Myr] 
+rinvlist = [1/r for r in rlist] # average time for life to form
+PRGBlist=[1-np.exp(-r/Earea*sum(RGBtimeareas)) for r in rlist]
+PpostRGBlist=[1-np.exp(-r/Earea*sum(postRGBtimeareas)) for r in rlist]
+Ptotlist=[1-np.exp(-r/Earea*sum(RGBtimeareas+postRGBtimeareas)) for r in rlist]
+
+plt.figure()
+plt.plot(rlist, PRGBlist, '--', color='k', label='Probability during RGB') # plot RGB probabilities
+plt.plot(rlist, PpostRGBlist, '-.', color='k', label='Probability after RGB') # plot postRGB probabilities
+plt.plot(rlist, Ptotlist, '-', color='k', label='Total probability')
+plt.title('Post-MS life probability for outer moons')
+plt.ylabel('Probability')
+plt.xlabel('Average rate of life formation [yr'+r'$^{-1}$'+']')
+plt.legend()
+
+# same figure but zoomed
+plt.figure()
+plt.plot(rlist, PRGBlist, '--', color='k', label='Probability during RGB') # plot RGB probabilities
+plt.plot(rlist, PpostRGBlist, '-.', color='k', label='Probability after RGB') # plot postRGB probabilities
+plt.plot(rlist, Ptotlist, '-', color='k', label='Total probability')
+plt.title('Zoomed in: Post-MS life probability for outer moons')
+plt.ylabel('Probability')
+plt.xlabel('Average rate of life formation [yr'+r'$^{-1}$'+']')
+plt.legend()
+plt.xlim([0, 1e-8]) # between life never forms and life forms on average once every 100 Myr
+
+# rinv plots
+plt.figure()
+plt.plot(rinvlist, PRGBlist, '--', color='k', label='Probability during RGB') # plot RGB probabilities
+plt.plot(rinvlist, PpostRGBlist, '-.', color='k', label='Probability after RGB') # plot postRGB probabilities
+plt.plot(rinvlist, Ptotlist, '-', color='k', label='Total probability')
+plt.title('Post-MS life probability for outer moons')
+plt.ylabel('Probability')
+plt.xlabel('Average time for life to form [yr]')
+plt.legend()
+plt.xlim([0, 1e8])
+
+    
 
 
