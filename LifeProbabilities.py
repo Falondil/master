@@ -85,7 +85,17 @@ plt.title('Post-MS life probability for outer moons')
 plt.ylabel('Probability')
 plt.xlabel('Average time for life to form [yr]')
 plt.legend()
-plt.xlim([0, 1e8])
+plt.xlim([0, 3e9])
+
+plt.figure()
+plt.semilogx(rinvlist, PRGBlist, '--', color='k', label='Probability during RGB') # plot RGB probabilities
+plt.semilogx(rinvlist, PpostRGBlist, '-.', color='k', label='Probability after RGB') # plot postRGB probabilities
+plt.semilogx(rinvlist, Ptotlist, '-', color='k', label='Total probability')
+plt.title('Post-MS life probability for outer moons')
+plt.ylabel('Probability')
+plt.xlabel('Average time for life to form [yr]')
+plt.legend()
+plt.xlim([0, 3e9])
 
     
 
