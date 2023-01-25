@@ -143,15 +143,35 @@ cind = min(range(n-1), key=lambda i: abs(age[i]-4.6e9))
 
 # Plot luminosity w.r.t. stellar age
 plt.figure()
-plt.semilogy(age[cind:],L[cind:],'-', color = 'y')
+plt.semilogy(age[cind:],L[cind:],'-', color = 'k')
 plt.gca().yaxis.set_ticks_position('both')
 plt.title('Change in luminosity ('+solarmodel+')')
 plt.xlabel('Age of the Sun [yr]')
-plt.ylabel('Luminosity '+r'$[L/L_\bigodot]$')    
+plt.ylabel('Luminosity '+r'$[L/L_\bigodot]$')
+if fileselect == '1':
+    plt.text(1.060e10, 1.2, 'RGB')
+    plt.hlines(y=1, xmin=0.98e10, xmax=1.188e10, color='k', linewidth=1)
+    plt.vlines(x=0.98e10, ymin=0.75, ymax=1.25, color='k', linewidth=1)
+    plt.vlines(x=1.188e10, ymin=0.75, ymax=1.25, color='k', linewidth=1)
+
+# and label evolutionary phases. 
+if fileselect == '1':
+    plt.figure()
+    plt.semilogy(age[cind:],L[cind:],'-', color = 'k')
+    plt.gca().yaxis.set_ticks_position('both')
+    plt.title('Change in luminosity ('+solarmodel+')')
+    plt.xlabel('Age of the Sun [yr]')
+    plt.ylabel('Luminosity '+r'$[L/L_\bigodot]$')    
+    plt.gca().set_xlim(left= age[-1]*0.95, right= age[-1]*1.005)
+    plt.text(1.168e10, 30, 'RGB bump') # Visual choice for x, y values of label position
+    plt.text(1.186e10, 3.5e3, 'RGB tip')  
+    plt.text(1.19e10, 30, 'Horizontal')
+    plt.text(1.19e10, 18, 'Branch')
+    plt.text(1.203e10, 200, 'AGB')
 
 # plot Te w.r.t. stellar age
 plt.figure()
-plt.plot(age[cind:], Te[cind:], linestyle='-', color = 'orange')
+plt.plot(age[cind:], Te[cind:], linestyle='-', color = 'k')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Effective temperature [K]')
 plt.title('Change in temperature ('+solarmodel+')')
@@ -237,16 +257,6 @@ funclist = [RecentVenus, EarlyMars]
 boundaries = 'RVEM'
 boundword = 'Optimistic'
 
-# # Plotting instellation at each body w.r.t. stellar age. Remove this and topi block
-# plt.figure()
-# for nb in range(numb):
-#     plt.semilogy(age[cind:topi[nb]],Seff[nb][cind:topi[nb]],'-',color=colors[nb],label=bodies[nb])
-# plt.gca().yaxis.set_ticks_position('both')
-# plt.title('Change in instellation ('+solarmodel+')')
-# plt.xlabel('Age of the Sun [yr]')
-# plt.ylabel('Instellation '+r'$[S/S_\bigoplus]$')
-# plt.legend()
-
 plt.figure()
 for nb in range(numb):
     plt.semilogy(age[cind:],Seff[nb][cind:],'-',linewidth=2,color=colors[nb],label=bodies[nb])
@@ -258,6 +268,13 @@ plt.title('Change in instellation ('+solarmodel+')')
 plt.xlabel('Age of the Sun [yr]')
 plt.ylabel('Instellation '+r'$[S/S_\bigoplus]$')
 plt.legend()
+if fileselect == '1':
+    plt.text(1.165e10, 2, 'IHZ', color='r')
+    plt.text(1.155e10, 0.35, 'OHZ', color='b')
+    plt.text(1.17e10, 4e-3, 'RGB bump')
+    plt.text(1.186e10, 1.6e2, 'RGB tip')
+    plt.text(1.194e10, 1.2e-2, 'HB')
+    plt.text(1.203e10, 9e-2, 'AGB')
 
 # HZ boundaries for plotting
 inSlim = [funclist[0](T) for T in Tlist] # inner HZ boundary limit
@@ -278,11 +295,16 @@ plt.plot(runawaySlim, Tlist, color='r', linestyle='--', label='Runaway')
 plt.plot(moistSlim, Tlist, color='r', label='Moist')
 plt.plot(maxGHSlim, Tlist, color='b', label='Maximum')
 plt.plot(emSlim, Tlist, color='b', linestyle=':', label='Early Mars')
+plt.plot(1, 5780,'.', color='k')
 plt.axis([2, 0.2, 2600, 7200])
 plt.title('Conservative and optimistic HZ comparison')
 plt.xlabel('Instellation '+r'$[S/S_\bigoplus]$')
 plt.ylabel('Effective temperature [K]')
 plt.legend(loc='lower left')
+# label the IHZ and OHZ and Earth
+plt.text(1.3, 5780, 'IHZ', color='r')
+plt.text(0.36, 6900, 'OHZ', color='b')
+plt.text(1, 5900, 'Earth', color='k')
 
 # Find the S limit for a given Te from the stellar track
 leftlimit = [funclist[0](T) for T in Te[cind:]]
@@ -299,7 +321,7 @@ inIHZ = [[leftlimit[i]>Scut[nb][i] for i in range(len(Scut[nb]))] for nb in rang
 inOHZ = [[Scut[nb][i]>rightlimit[i] for i in range(len(Scut[nb]))] for nb in range(numb)]
 booleanHZ = [[inIHZ[nb][i] and inOHZ[nb][i] for i in range(len(Scut[nb]))] for nb in range(numb)]
 for nb in range(numb):
-    booleanHZ[nb][-1]=False # Stupid way to ensure that the habitablity time calculations work even if you have a track too short to plot all the time spans inside HZ
+    booleanHZ[nb][-1]=False # Ensure that the habitablity time calculations work even if you have a track too short to plot all the time spans inside HZ
     booleanHZ[nb][0]=False # same as above, but for start
 # for nb in range(numb): # plotting is for working purposes
     # plt.figure()
@@ -330,13 +352,19 @@ waterlosstimes = [[age[cind+runawaystops[nb][i]]-age[cind+runawaystarts[nb][i]] 
 # plot HR diagram
 plt.figure()
 plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', mfc = 'gray', markeredgecolor='k', markersize=2)
-plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', markersize=2, color = 'g', label=boundword+' HZ')
+plt.loglog([Te[cind+i] for i in anytrue], [L[cind+i] for i in anytrue], '.', markersize=2, color = 'c', label=boundword+' HZ')
 plt.xlabel('Effective temperature [K]')
 plt.ylabel('Luminosity '+r'$[L/L_\bigodot]$')
 plt.title('HR diagram ('+solarmodel+')')
 plt.gca().invert_xaxis()
-plt.xlim([7200, 2600])
+plt.xlim([6000, 2550])
 plt.ylim([0.9*10**0, 10**4])
+if fileselect == '1':
+    plt.text(5.700e3, 1, 'Start')
+    plt.text(4.8e3, 2, 'RGB')
+    plt.text(3e3, 1.5e3, 'RGB tip')
+    plt.text(4.9e3, 4e1, 'HB')
+    plt.text(3e3, 6e3, 'AGB end')
 
 # preliminary timespan calculation
 approxyearsinHZ = [[age[cind+x[1]]-age[cind+x[0]] for x in trueranges[nb]] for nb in range(numb)]
@@ -404,6 +432,7 @@ plt.plot(runawaySlim, Tlist, color='r', linestyle='--')
 plt.plot(moistSlim, Tlist, color='r')
 plt.plot(maxGHSlim, Tlist, color='b')
 plt.plot(emSlim, Tlist, color='b', linestyle=':')
+plt.plot(1, 5780,'.', color='k')
 plt.axis([2, 0.2, 2600, 7200])
 plt.title('First pass through HZ ('+solarmodel+')')
 plt.xlabel('Instellation '+r'$[S/S_\bigoplus]$')
@@ -412,6 +441,10 @@ for nb in range(numb):
     plt.plot(Seff[nb][cind:n1],Te[cind:n1],linestyle='-',linewidth=2,color=colors[nb],label=bodies[nb]) # n1 is index for last point before helium flash
     plt.plot(Seff[nb][cind],Te[cind],'o',color='k')
     plt.legend()
+# label the IHZ and OHZ 
+plt.text(1.3, 5780, 'IHZ', color='r')
+plt.text(0.36, 6900, 'OHZ', color='b')
+plt.text(1, 5900, 'Earth', color='k')
 
 # #----------------------------------EXTRA---------------------------------------
 # # Extra plotting code, must be run manually
@@ -433,8 +466,7 @@ if len(distances)>10:
     plt.plot([], label="Pass #1", color=mapcolors[0])
     for i in range(max([len(allyearsinHZ[nb]) for nb in range(numb)])):
         plt.plot([], label="Pass #"+str(2+i), color=mapcolors[1:][(i-1)%(len(mapcolors)-1)])
-    plt.xlim([distances[0]*0.75, distances[-1]*1.02])
-    plt.ylim([0, 4e8])
+    
     # legend1 = plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
     plt.title('Sum of '+boundword+' TIHZ ('+solarmodel+')')
     
@@ -454,17 +486,30 @@ if len(distances)>10:
     
     for nm in range(nump):
         plt.text(planetdistances[nm]+0.2, 3.5e8, planets[nm])
+      
+    # Choose linear
+    plt.xlim([distances[0]*0.75, distances[-1]*1.02])
+    plt.ylim([0, 4e8])
     
+    # or log-log plot
+    # plt.gca().set_yscale('log')
+    # plt.gca().set_xscale('log')
+    
+    # log-log slope for PARSEC 1st TIHZ after RGB bump is roughly -0.55 --> TIHZ propto 1/sqrt(r).
+    
+
+# Run the code with input '1' then save allyearsinHZPARSEC = allyearsinHZ.
+# Run the code again now with input '2' then run the code snippet below.
 
 # plt.figure()
 # for nb in range(numb):
-#     plt.bar([nb + 0.25*i for i in range(len(allyearsinHZ[nb]))], allyearsinHZ[nb], width=0.25, color=colors[nb])
-#     plt.bar([nb + 0.25*i for i in range(len(allyearsinHZPARSEC[nb]))], allyearsinHZPARSEC[nb], width=0.25, fill = False, hatch='//')
+#     plt.bar([nb + 0.25*i for i in range(len(allyearsinHZPARSEC[nb]))], allyearsinHZPARSEC[nb], width=0.25, color=colors[nb])
+#     plt.bar([nb + 0.25*i for i in range(len(allyearsinHZ[nb]))], allyearsinHZ[nb], width=0.25, fill = False, hatch='//')
 # plt.xticks(range(numb), bodies)
 # plt.ylabel('timespan [years]')
-# plt.title('Time spans inside the '+boundword+' Habitable Zone')
-# plt.bar(0, height=0, width=0, facecolor='grey', label=solarmodel)
-# plt.bar(0, height = 0, width=0, fill = False, hatch='//', label ='PARSEC')
+# plt.title(boundword+' Time Inside the Habitable Zone')
+# plt.bar(0, height=0, width=0, facecolor='grey', label ='PARSEC')
+# plt.bar(0, height = 0, width=0, fill = False, hatch='//', label=solarmodel)
 # plt.legend()
 
 
