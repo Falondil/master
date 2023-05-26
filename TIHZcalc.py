@@ -189,26 +189,16 @@ numb = len(bodies)
 barwidth = 0.3
 
 # Uncomment these lines to get sum of TIHZ graph
-# startdistance = 5
-# stopdistance = 44.5
-# distances = [startdistance+barwidth*r for r in range(int((stopdistance+barwidth-startdistance)/barwidth))] # list from startdistance to roughly 39.5 AU 
-# bodies = [str(d) for d in distances]
-# numb = len(distances)
-# colors = ['C'+str(i) for i in range(numb)]
+startdistance = 5
+stopdistance = 44.5
+distances = [startdistance+barwidth*r for r in range(int((stopdistance+barwidth-startdistance)/barwidth))] # list from startdistance to roughly stopdistance AU 
+bodies = [str(d) for d in distances]
+numb = len(distances)
+colors = ['C'+str(i) for i in range(numb)]
 
 # calculations for each body
 Seff = [[x/d**2 for x in L] for d in distances] # S0
 Scut = [Seff[nb][cind:] for nb in range(numb)] # S0, effective instellations after current time
-
-# topval = []
-# topi = []
-# for nb in range(numb):
-#     try:
-#         topval += [list(filter(lambda i: i>maxS, Scut[nb]))[0]] # first value exceeding maxS
-#         topi += [Scut[nb].index(topval[nb])+cind] # index of that value
-#     except IndexError:
-#         topval += [max(Scut[nb])] # max value instead if it never exceeds maxS
-#         topi += [len(Seff[nb])] # entire length should be plotted
 
 #----------------------------------PART 4a-------------------------------------
 # Habitable Zone and time within
@@ -349,6 +339,16 @@ runawaystarts = [[i for i in runawayind[nb] if i-1 not in runawayind[nb]] for nb
 runawaystops = [[i for i in runawayind[nb] if i+1 not in runawayind[nb]] for nb in range(numb)]
 waterlosstimes = [[age[cind+runawaystops[nb][i]]-age[cind+runawaystarts[nb][i]] for i in range(len(runawaystops[nb]))] for nb in range(numb)]
 
+# energy-limited water-loss calc
+waterlosscoefficient = 1e-6*2.0976714e44 # [yrs^-1]
+oceanhydrogens = 1e47 # number of hydrogen atoms in the ocean 
+waterlossmasses = [0.01, 0.1, 1.0, 5.0] # [M_earth]
+waterlossradii = [0.273, 0.531, 1.0, 1.5] # [R_earth]
+
+escrates = [[[waterlosscoefficient*waterlossradii[bodyind]**3*Seff[nb][cind+ind]/waterlossmasses[bodyind] for ind in range(runawaystarts[nb][0], runawaystops[nb][0])] for nb in range(numb)] for bodyind in range(len(waterlossmasses))]
+waterlossdeltat = [[age[cind+ind+1]-age[cind+ind] for ind in range(runawaystarts[nb][0], runawaystops[nb][0])] for nb in range(numb)] # dt during period of waterloss
+oceanslost = [[sum([escrates[bodyind][nb][i]*waterlossdeltat[nb][i]/oceanhydrogens for i in range(len(waterlossdeltat[nb]))]) for nb in range(numb)] for bodyind in range(len(waterlossmasses))]
+
 # plot HR diagram
 plt.figure()
 plt.loglog(Te[cind:], L[cind:], linestyle='--',marker='.', color = 'gray', mfc = 'gray', markeredgecolor='k', markersize=2)
@@ -406,18 +406,35 @@ for nb in range(numb):
 
 strYears = [['0' if x == 0 else "{:.1e}".format(x) for x in allyearsinHZ[nb]] for nb in range(numb)] # list of strings, scientific notation 1 decimal
 
-# Water-loss time plot
-EarthOceanLossTime = 5e14/(86400*365.241) # from Kasting et al 1993 using mixing ratio f(H20) = 1 (completely water dominated).
-wfig=plt.figure()
-wax=wfig.add_subplot(111)
-for nb in range(numb):
-    plt.bar([nb + 0.1666*i for i in range(len(waterlosstimes[nb]))], waterlosstimes[nb], width=0.1666, color=colors[nb])
-plt.xticks(range(numb), bodies)
-wax2 = wax.secondary_yaxis('right', functions=(lambda x: x/EarthOceanLossTime, lambda x: x*EarthOceanLossTime))
-wax2.set_ylabel('Earth Ocean(s) lost')
+# Diffusion-limited water-loss time plot
+# EarthOceanLossTime = 5e14/(86400*365.241) # from Kasting et al 1993 using mixing ratio f(H20) = 1 (completely water dominated).
+# wfig=plt.figure()
+# wax=wfig.add_subplot(111)
+# for nb in range(numb):
+#     plt.bar([nb + 0.1666*i for i in range(len(waterlosstimes[nb]))], waterlosstimes[nb], width=0.1666, color=colors[nb])
+# plt.xticks(range(numb), bodies)
+# wax2 = wax.secondary_yaxis('right', functions=(lambda x: x/EarthOceanLossTime, lambda x: x*EarthOceanLossTime))
+# wax2.set_ylabel('Earth Ocean(s) lost')
 
-plt.ylabel('timespan [years]')
-plt.title('Water-loss time spans ('+solarmodel+')')
+# plt.ylabel('timespan [years]')
+# plt.title('Water-loss time spans ('+solarmodel+')')
+
+# Energy-limited water-loss time plot
+hatches = ['//', '+', '\\\\', '--']
+
+plt.figure()
+for bodyind in range(len(waterlossmasses)):
+    for nb in range(numb):
+        if nb == 0:
+            plt.bar([nb+bodyind/5], oceanslost[bodyind][nb], width=0.2, hatch=hatches[bodyind], color='c', label='Mass = '+str(waterlossmasses[bodyind])+' '+r'$M_\bigoplus$')
+        else:
+            plt.bar([nb+bodyind/5], oceanslost[bodyind][nb], width=0.2, hatch=hatches[bodyind], color='c')
+plt.xticks(range(numb), bodies)
+plt.ylabel('Earth Ocean(s) Lost')
+plt.title('Energy-limited water loss (' +solarmodel+')' )
+plt.legend()
+
+
 
 # #----------------------------------PART 4b-------------------------------------
 # Habitable Zone plotting
@@ -497,6 +514,28 @@ if len(distances)>10:
     
     # log-log slope for PARSEC 1st TIHZ after RGB bump is roughly -0.55 --> TIHZ propto 1/sqrt(r).
     
+    
+    # water-loss
+    
+    plt.figure()
+    for bodyind in range(len(waterlossmasses)):
+        plt.plot(distances, oceanslost[bodyind], color=mapcolors[bodyind], label='Mass = '+str(waterlossmasses[bodyind])+' '+r'$M_\bigoplus$')
+    plt.xlim([distances[0]*0.75, distances[-1]*1.02])
+    plt.xlabel('Orbiting distance [AU]')
+    plt.ylabel('Earth Ocean(s) Lost')
+    plt.title('Energy-limited water loss (' +solarmodel+')' )
+    
+    linelist = []
+    for nm in range(nump):
+        line = plt.axvline(planetdistances[nm], linestyle=planetstyle[nm], color='k',linewidth=1)
+        linelist += [line]
+    # plt.legend(handles=linelist, bbox_to_anchor=(1.005, 0), loc='lower left')
+    # plt.gca().add_artist(legend1)
+    for nm in range(nump):
+        plt.text(planetdistances[nm]+0.2, 5, planets[nm])
+    plt.legend(loc='best', bbox_to_anchor=(0.5, 0.4, 0.5, 0.5))
+    
+
 
 # Run the code with input '1' then save allyearsinHZPARSEC = allyearsinHZ.
 # Run the code again now with input '2' then run the code snippet below.
