@@ -285,16 +285,18 @@ plt.plot(runawaySlim, Tlist, color='r', linestyle='--', label='Runaway')
 plt.plot(moistSlim, Tlist, color='r', label='Moist')
 plt.plot(maxGHSlim, Tlist, color='b', label='Maximum')
 plt.plot(emSlim, Tlist, color='b', linestyle=':', label='Early Mars')
-plt.plot(1, 5780,'.', color='k')
+plt.plot(1, 5780,'.', color='k') # Earth
+plt.plot(1.78, 5780, '.', color='k') # Venus
 plt.axis([2, 0.2, 2600, 7200])
 plt.title('Conservative and optimistic HZ comparison')
 plt.xlabel('Instellation '+r'$[S/S_\bigoplus]$')
 plt.ylabel('Effective temperature [K]')
 plt.legend(loc='lower left')
 # label the IHZ and OHZ and Earth
-plt.text(1.3, 5780, 'IHZ', color='r')
+plt.text(1.4, 6900, 'IHZ', color='r')
 plt.text(0.36, 6900, 'OHZ', color='b')
 plt.text(1, 5900, 'Earth', color='k')
+plt.text(1.78, 5900, 'Recent Venus', color='k')
 
 # Find the S limit for a given Te from the stellar track
 leftlimit = [funclist[0](T) for T in Te[cind:]]
@@ -344,6 +346,12 @@ waterlosscoefficient = 1e-6*2.0976714e44 # [yrs^-1]
 oceanhydrogens = 1e47 # number of hydrogen atoms in the ocean 
 waterlossmasses = [0.01, 0.1, 1.0, 5.0] # [M_earth]
 waterlossradii = [0.273, 0.531, 1.0, 1.5] # [R_earth]
+
+# if fileselect=='2': # fixes Dartmouth so that the water loss is calculated even as the instellation dips to habitable levels briefly during the RGB bump.  
+#     runawaystarts[1] = [runawaystarts[1][0]]
+#     runawaystarts[2] = [runawaystarts[2][0]]
+#     runawaystops[1] = [runawaystops[1][1]]
+#     runawaystops[2] = [runawaystops[2][1]]
 
 escrates = [[[waterlosscoefficient*waterlossradii[bodyind]**3*Seff[nb][cind+ind]/waterlossmasses[bodyind] for ind in range(runawaystarts[nb][0], runawaystops[nb][0])] for nb in range(numb)] for bodyind in range(len(waterlossmasses))]
 waterlossdeltat = [[age[cind+ind+1]-age[cind+ind] for ind in range(runawaystarts[nb][0], runawaystops[nb][0])] for nb in range(numb)] # dt during period of waterloss
@@ -450,18 +458,21 @@ plt.plot(moistSlim, Tlist, color='r')
 plt.plot(maxGHSlim, Tlist, color='b')
 plt.plot(emSlim, Tlist, color='b', linestyle=':')
 plt.plot(1, 5780,'.', color='k')
-plt.axis([2, 0.2, 2600, 7200])
+plt.plot(1.78, 5780, '.', color='k')
+plt.axis([Smax, 0.2, 2600, 7200])
 plt.title('First pass through HZ ('+solarmodel+')')
 plt.xlabel('Instellation '+r'$[S/S_\bigoplus]$')
 plt.ylabel('Effective temperature [K]')
+plt.text(1.4, 6900, 'IHZ', color='r')
+plt.text(0.36, 6900, 'OHZ', color='b')
+plt.text(1, 5900, 'Earth', color='k')
+plt.text(1.78, 5900, 'Recent Venus', color='k')
 for nb in range(numb):
     plt.plot(Seff[nb][cind:n1],Te[cind:n1],linestyle='-',linewidth=2,color=colors[nb],label=bodies[nb]) # n1 is index for last point before helium flash
     plt.plot(Seff[nb][cind],Te[cind],'o',color='k')
-    plt.legend()
+plt.legend(loc='upper right', bbox_to_anchor=(0.5, 0.42, 0.5, 0.5))
 # label the IHZ and OHZ 
-plt.text(1.3, 5780, 'IHZ', color='r')
-plt.text(0.36, 6900, 'OHZ', color='b')
-plt.text(1, 5900, 'Earth', color='k')
+
 
 # #----------------------------------EXTRA---------------------------------------
 # # Extra plotting code, must be run manually
